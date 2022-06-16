@@ -22,8 +22,14 @@
                         <h3>Bem-vindo</h3>
                     </div>
                 </div>
-                <form action="{{Route('verificaLogin')}}" method="POST">
+                <form action="{{Route('registraLogin')}}" method="POST">
                     @csrf
+                    <div class="row py-2">
+                        <div class="col-12">
+                            <label class="form-label fw-bold" for="nameLogin">Nome</label>
+                            <input class="form-control" type="text" name="nameLogin" id="nameLogin" placeholder="Digite seu Nome...">                  
+                        </div>
+                    </div>
                     <div class="row py-2">
                         <div class="col-12">
                             <label class="form-label fw-bold" for="userLogin">Usuário</label>
@@ -32,13 +38,19 @@
                     </div>
                     <div class="row py-2">
                         <div class="col-12">
-                            <label class="form-label fw-bold" for="senhaLogin">Senha</label>
-                            <input class="form-control" type="password" name="senhaLogin" id="senhaLogin" placeholder="Digite sua senha...">                  
+                            <label class="form-label fw-bold" for="emailLogin">Email</label>
+                            <input class="form-control" type="text" name="emailLogin" id="emailLogin" placeholder="Digite seu Email...">                  
+                        </div>
+                    </div>
+                    <div class="row py-2">
+                        <div class="col-12">
+                            <label class="form-label fw-bold" for="passwordLogin">Senha</label>
+                            <input class="form-control" type="password" name="passwordLogin" id="passwordLogin" placeholder="Digite sua senha...">                  
                         </div>
                     </div>
                     <div class="row pt-4 text-center">
                         <div class="col-12">
-                            <button class="form-control fw-bold btn btn-info text-white" type="submit">Entrar</button>              
+                            <button class="form-control fw-bold btn btn-info text-white" type="submit">Enviar</button>              
                         </div>
                     </div>
                 </form>

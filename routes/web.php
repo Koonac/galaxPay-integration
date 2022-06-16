@@ -12,11 +12,18 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('login.login');
+Route::namespace('App\Http\Controllers\login')->group(function(){
+    Route::get('/', 'loginController')->name('login');
+    Route::post('/verificaLogin', 'loginController@verificaLogin')->name('verificaLogin');
+    Route::get('/cadastraLogin', 'loginController@cadastraLogin')->name('cadastraLogin');
+    Route::post('/registraLogin', 'loginController@registraLogin')->name('registraLogin');
+    Route::get('/logout', 'loginController@logout')->name('logout');
 });
 
-Route::namespace('App\Http\Controllers')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(function(){
+    Route::get('/home', 'homeController')->name('home');
+});
+
+Route::namespace('App\Http\Controllers\api')->group(function(){
     Route::get('/galaxPay', 'galaxPayAPI@getClientesGalaxPay')->name('galaxPay');
 });
