@@ -61,12 +61,17 @@ class loginController extends Controller
         // SALVANDO DADOS NO BANCO
         $user->save();
 
-        return redirect()->route('login')->with('success', ['Login cadastrado com sucesso.']);
+        return redirect()->route('login')->with('SUCCESS', ['Login cadastrado com sucesso.']);
     }
 
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login')->with('success', ['Você deslogou com sucesso']);
+        return redirect()->route('login')->with('SUCCESS', ['Você deslogou com sucesso']);
+    }
+
+    public function test()
+    {
+        return redirect()->route('login')->with('SUCCESS', ['Você deslogou com sucesso', 'Test ok']);
     }
 }

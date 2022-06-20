@@ -12,18 +12,45 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+// ROTAS DE LOGIN
 Route::namespace('App\Http\Controllers\login')->group(function(){
     Route::get('/', 'loginController')->name('login');
     Route::post('/verificaLogin', 'loginController@verificaLogin')->name('verificaLogin');
     Route::get('/cadastraLogin', 'loginController@cadastraLogin')->name('cadastraLogin');
     Route::post('/registraLogin', 'loginController@registraLogin')->name('registraLogin');
+    Route::get('/test', 'loginController@test')->name('test');
     Route::get('/logout', 'loginController@logout')->name('logout');
 });
 
+// ROTAS DA HOME
 Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(function(){
     Route::get('/home', 'homeController')->name('home');
 });
 
-Route::namespace('App\Http\Controllers\api')->group(function(){
-    Route::get('/galaxPay', 'galaxPayAPI@getClientesGalaxPay')->name('galaxPay');
+// ROTAS DE CLIENTES
+Route::middleware(['auth'])->namespace('App\Http\Controllers\clientes')->group(function(){
+    Route::get('/clientes', 'clientesController')->name('clientes');
+});
+
+// ROTAS DE EMPRESAS
+Route::middleware(['auth'])->namespace('App\Http\Controllers\empresas')->group(function(){
+    Route::get('/empresas', 'empresasController')->name('empresas');
+});
+
+// ROTAS DA RELATÓRIOS
+Route::middleware(['auth'])->namespace('App\Http\Controllers\relatorios')->group(function(){
+    Route::get('/relatorios', 'relatoriosController')->name('relatorios');
+});
+
+// ROTAS DE CONFIGURAÇÕES DO USUARIO LOGADO
+Route::middleware(['auth'])->namespace('App\Http\Controllers\configUser')->group(function(){
+    Route::get('/perfil', 'perfilController')->name('perfil');
+    Route::put('/perfil/alterarSenha/{idUserEdit}', 'perfilController@editPassword')->name('editPassword');
+    Route::put('/perfil/atualizaUsuario/{idUserEdit}', 'perfilController@editUser')->name('editUser');
+    Route::delete('/perfil/delete/{idUserDelete}', 'perfilController@deleteUser')->name('deleteUser');
+});
+
+// ROTAS DA API - GALAXPAY
+Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->group(function(){
+    Route::get('/galaxPay', 'galaxPayAPI@generateAcessToken')->name('galaxpay.accessToken');
 });

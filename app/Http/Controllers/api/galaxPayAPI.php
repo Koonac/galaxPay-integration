@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Http;
 
 class galaxPayAPI extends Controller
 {
-    public function generateAcessToken(){
+    public function generateAcessToken($galaxId, $galaxHash){
         
         $permissoesApi = 'customers.read customers.write plans.read plans.write transactions.read transactions.write webhooks.write cards.read cards.write card-brands.read subscriptions.read subscriptions.write charges.read charges.write boletos.read';
 
         $response = Http::withHeaders([
-            'Authorization' => 'Basic '. base64_encode('5473:83Mw5u8988Qj6fZqS4Z8K7LzOo1j28S706R0BeFe'),
+            'Authorization' => 'Basic '. base64_encode("$galaxId:$galaxHash"),
             'Content-Type' => 'application/json'
         ])->withBody(json_encode([
             'grant_type' => 'authorization_code',
@@ -22,9 +22,8 @@ class galaxPayAPI extends Controller
         return $response['access_token'];
     }
 
-    public function getClientesGalaxPay(){
-        $token = galaxPayAPI::generateAcessToken();
-        
+    public function getClientesGalaxPay($token){
+       
         $response = Http::withHeaders([
             'Authorization' => "Bearer $token", //accessToken
             'Content-Type' => 'application/json'

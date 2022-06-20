@@ -8,15 +8,16 @@
 
     {{-- IMPORTANDO CSS --}}
     <link rel="stylesheet" href="{{asset('css/bootstrap.css')}}">
+    <link rel="stylesheet" href="{{asset('css/myStyle.css')}}">
     {{-- IMPORTANDO SCRIPTS --}}
     <script src="{{asset('js/bootstrap.js')}}"></script>
     <script src="{{asset('js/jquery.js')}}"></script>
 </head>
 <body>
-    <div class="container-fluid vh-100 bg-light d-flex align-items-center p-5 m-0">
-        <div class="row vw-100 justify-content-end">
+    <div class="container-fluid float-start vh-100 d-flex align-items-center bg-info">
+        <div class="row vw-100 justify-content-center bg-white shadow p-5">
             {{-- CAMPO DE LOGIN --}}
-            <div class="col-md-5 border rounded bg-white shadow p-4">
+            <div class="col-md-4 border rounded bg-light shadow p-4">
                 <div class="row py-2">
                     <div class="col-12">
                         <h3>Bem-vindo</h3>
@@ -42,6 +43,13 @@
                         </div>
                     </div>
                 </form>
+                {{-- <div class="row pt-4 text-center">
+                    <div class="col-12">
+                        <a href="{{route('test')}}">
+                            <button class="form-control fw-bold btn btn-info text-white" type="submit">Test</button>              
+                        </a>
+                    </div>
+                </div> --}}
                 
                 {{-- COMPONENTE DE MENSAGEM DE ERROS --}}
                 <x-messages.returnMessages>
