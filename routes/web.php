@@ -30,6 +30,8 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(funct
 // ROTAS DE CLIENTES
 Route::middleware(['auth'])->namespace('App\Http\Controllers\clientes')->group(function(){
     Route::get('/clientes', 'clientesController')->name('clientes');
+    Route::get('/clientes/pesquisa/{pesquisaCliente}', 'clientesController@pesquisaCliente')->name('pesquisaCliente');
+    Route::get('/clientes/gerarCartao/{idCliente}', 'clientesController@gerarCartao')->name('clientes.gerarCartao');
 });
 
 // ROTAS DE EMPRESAS
@@ -52,5 +54,6 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\configUser')->group
 
 // ROTAS DA API - GALAXPAY
 Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->group(function(){
-    Route::get('/galaxPay', 'galaxPayAPI@generateAcessToken')->name('galaxpay.accessToken');
+    Route::get('/galaxPay/generateAcessToken', 'galaxPayControllerAPI@generateAcessToken')->name('galaxpay.accessToken');
+    Route::get('/galaxPay/importaClientesGalaxPay', 'galaxPayControllerAPI@importaClientesGalaxPay')->name('galaxpay.clientes');
 });

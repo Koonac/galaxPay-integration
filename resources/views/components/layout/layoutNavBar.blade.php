@@ -8,17 +8,18 @@
     {{-- IMPORTANDO CSS --}}
     <link rel="stylesheet" href="{{asset('css/bootstrap.css')}}">
     <link rel="stylesheet" href="{{asset('css/myStyle.css')}}">
+    
     {{-- IMPORTANDO SCRIPTS --}}
-    <script src="{{asset('js/bootstrap.js')}}"></script>
-    <script src="{{asset('js/jquery.js')}}"></script>
-    <script src="{{asset('js/jqueryMask.js')}}"></script>
-    <script src="{{asset('js/myScript.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/jquery.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/bootstrap.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/jqueryMask.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/myScript.js')}}"></script>
     <script src="https://kit.fontawesome.com/dd928c7064.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <nav class="navbar navbar-expand-md border-bottom shadow px-2 mb-4 bg-info">
       <div class="container-fluid">
-          <a class="navbar-brand fw-bold" href="{{route('home')}}">(Logo)</a>
+          <a class="navbar-brand text-white fw-bold" href="{{route('home')}}"><img src="{{asset('assets/logoSimples.png')}}" alt="cartao-soli" width="50"></a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navBarMenu" aria-controls="navBarMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -46,12 +47,12 @@
               </ul>
           </div>
           <a class="d-none d-md-block link-dark fw-bold" href="{{route('logout')}}">
-              <i class="fa-solid fa-arrow-right-from-bracket fa-xl"></i>
+              <i class="fa-solid text-white fa-arrow-right-from-bracket fa-xl"></i>
           </a>
       </div>
   </nav>
   <div class="container-fluid px-4">
-    <div class="row bg-light shadow border rounded">
+    <div class="row">
       <div class="col-12">
         
         {{ $slot }}

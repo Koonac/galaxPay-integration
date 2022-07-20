@@ -23,16 +23,24 @@ class perfilController extends Controller
     
     public function editPassword(Request $request)
     {
-        $userEdit = User::find($request->idUserEdit);
-        $senhaAntiga = Hash::make($request->oldPassword);
-        $request->newPassword; 
-        $request->confirmNewPassword; 
+        $userEdit       = User::find($request->idUserEdit);
+        $senhaAntiga    = $request->oldPassword;
+        $novaSenha      = $request->newPassword; 
+        $confirmaSenha  = $request->confirmNewPassword; 
         
-        if($userEdit->password != $senhaAntiga){
-            return redirect()->back()->withInput()->withErrors(["Senha digitada não confere com a senha cadastrada. (METODO INCOMPLETO AINDA)"]);
+        if(!Hash::check($senhaAntiga, $userEdit->password)){
+            return redirect()->back()->withInput()->withErrors(["Senha inválida."]);
         }
-    
-        return redirect()->back()->withInput();
+        if($novaSenha != $confirmaSenha){
+            return redirect()->back()->withInput()->withErrors(["Senha de confirmação incorreta."]);
+        }
+        
+        // ALTERANDO SNEHA DO USUARIO
+        $novaSenha      = Hash::make($request->newPassword); 
+        $userEdit->update(['password' => $novaSenha]);
+
+        return redirect()->back()->withInput()->with('SUCCESS', ['Senha alterada com sucesso.']);
+
     }
 
     public function editUser(Request $request)
@@ -49,12 +57,7 @@ class perfilController extends Controller
             $galaxpayParametros = new galaxpay_parametros();
             $galaxpayParametros->user_id = $request->idUserEdit;
         }
-        
-        // CAPTURANDO TOKEN DA GALAX PAY
-        $token = route('galaxpay.accessToken', [$request->galaxId, $request->galaxHash]);
-        print_r($token);
-        die;
-        
+                
         // ADICIONANDO RECEBIDOS PELO REQUEST AO MODEL
         $userEdit->name = $request->nomePerfil; 
         // $userEdit->cpf = $request->cpfPerfil;

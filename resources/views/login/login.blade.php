@@ -14,6 +14,9 @@
     <script src="{{asset('js/jquery.js')}}"></script>
 </head>
 <body>
+    <div class="position-absolute d-flex justify-content-center w-100 ">
+        <img src="{{asset('assets/logo.svg')}}" alt="logo" width="700">
+    </div>
     <div class="container-fluid float-start vh-100 d-flex align-items-center bg-info">
         <div class="row vw-100 justify-content-center bg-white shadow p-5">
             {{-- CAMPO DE LOGIN --}}

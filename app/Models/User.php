@@ -12,6 +12,14 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    function galaxPayParametros(){
+        return $this->hasOne(galaxpay_parametros::class);
+    }
+    
+    function galaxPayClientes(){
+        return $this->hasMany(clientes_galaxpay::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *

@@ -1,9 +1,9 @@
 <x-layout.layoutNavBar>
-    <div class="container-fluid p-4">
+    <div class="container-fluid bg-light shadow border rounded p-4">
         <form action="{{route('editUser', $user->id)}}" method="POST">
             @method('PUT')
             @csrf
-            <div class="row">
+            <div class="row ">
                 <div class="col-12">
                     <h4 class="fw-bold text-uppercase">Dados pessoais</h4>
                 </div>
@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="fw-bold" for="cpfPerfil">CPF</label>
-                    <input class="form-control" name="cpfPerfil" id="cpfPerfil" type="text">
+                    <input class="form-control cnpjMask" name="cpfPerfil" id="cpfPerfil" type="text">
                 </div>
             </div>
             <div class="row py-2">
@@ -48,11 +48,11 @@
             <div class="row py-2">
                 <div class="col-md-6">
                     <label class="fw-bold" for="galaxId">GalaxID</label>
-                    <input class="form-control" name="galaxId" id="galaxId" type="text" aria-describedby="helpGalaxConection" value="">
+                    <input class="form-control" name="galaxId" id="galaxId" type="text" aria-describedby="helpGalaxConection" value="{{isset($user->galaxPayParametros->galax_id) ? $user->galaxPayParametros->galax_id : ''}}">
                 </div>
                 <div class="col-md-6">
                     <label class="fw-bold" for="galaxHash">Galaxhash</label>
-                    <input class="form-control" name="galaxHash" id="galaxHash" type="text" aria-describedby="helpGalaxConection" value="">
+                    <input class="form-control" name="galaxHash" id="galaxHash" type="text" aria-describedby="helpGalaxConection" value="{{isset($user->galaxPayParametros->galax_hash) ? $user->galaxPayParametros->galax_hash : ''}}">
                 </div>
                 <div id='helpGalaxConection' class="form-text">
                     Galax Id e Galax Hash são fornecidos pelo suporte de integração da Galax Pay.
@@ -77,39 +77,6 @@
     </div>
 
     {{-- INCLUINDO COMPONENTE DE MODAL --}}
-    <x-modals.formModal>
-        {{-- DEFININDO ID DO MODAL PARA ABERTURA --}}
-        <x-slot name="modalId">
-            modalEditPassword
-        </x-slot>
-        {{-- DEFININDO TITULO DO MODAL --}}
-        <x-slot name="title">
-            Alterar senha
-        </x-slot>
-        {{-- DEFININDO URL DE ENVIO DO FORM --}}
-        <x-slot name="route">
-            {{route('editPassword', $user->id)}}
-        </x-slot>
-        
-        <div class="row py-2">
-            <div class="col-12">
-                <label class="fw-bold" for="oldPassword">Senha antiga:</label>
-                <input class="form-control" name="oldPassword" id="oldPassword" type="text" placeholder="Digite a senha antiga...">
-            </div>
-        </div>
-        <hr>
-        <div class="row py-2">
-            <div class="col-12">
-                <label class="fw-bold" for="newPassword">Nova senha:</label>
-                <input class="form-control" name="newPassword" id="newPassword" type="text" placeholder="Digite sua nova senha...">
-            </div>
-        </div>
-        <div class="row py-2">
-            <div class="col-12">
-                <label class="fw-bold" for="confirmNewPassword">Confirma nova senha:</label>
-                <input class="form-control" name="confirmNewPassword" id="confirmNewPassword" type="text" placeholder="Digite a nova senha novamente...">
-            </div>
-        </div>
-    </x-modals.formModal>
+   @include('components.modals.editPassword')
 
 </x-layout.layoutNavBar>

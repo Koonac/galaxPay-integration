@@ -1,3 +1,8 @@
 <x-layout.layoutNavBar>
-    <h1>Olá, bem-vindo a home!</h1>
+    <div class="container-fluid">
+        <div class="row p-4">
+            <div class="col-12">
+                <img src="{{asset('assets/logo.svg')}}" alt="logo">
+            </div>
+        </div>
 </x-layout.layoutNavBar>
