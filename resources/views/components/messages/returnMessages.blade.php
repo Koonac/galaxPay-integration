@@ -6,6 +6,14 @@
     @endforeach
 @endif
 
+@if(isset($ERROR))
+    @foreach($ERROR as $msgError)
+        <div class="alert alert-danger shadow mt-2">
+            {{$msgError}}
+        </div>
+    @endforeach
+@endif
+
 @if(session('SUCCESS'))
     @foreach(session('SUCCESS') as $msgSuccess)
         <div class="alert alert-success shadow mt-2">

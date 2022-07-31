@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 // ROTAS DE LOGIN
 Route::namespace('App\Http\Controllers\login')->group(function(){
-    Route::get('/', 'loginController')->name('login');
+    Route::get('', 'loginController')->name('login');
     Route::post('/verificaLogin', 'loginController@verificaLogin')->name('verificaLogin');
     Route::get('/cadastraLogin', 'loginController@cadastraLogin')->name('cadastraLogin');
     Route::post('/registraLogin', 'loginController@registraLogin')->name('registraLogin');
@@ -24,14 +24,14 @@ Route::namespace('App\Http\Controllers\login')->group(function(){
 
 // ROTAS DA HOME
 Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(function(){
-    Route::get('/home', 'homeController')->name('home');
+    Route::get('home', 'homeController')->name('home');
 });
 
 // ROTAS DE CLIENTES
 Route::middleware(['auth'])->namespace('App\Http\Controllers\clientes')->group(function(){
     Route::get('/clientes', 'clientesController')->name('clientes');
     Route::get('/clientes/pesquisa/{pesquisaCliente}', 'clientesController@pesquisaCliente')->name('pesquisaCliente');
-    Route::get('/clientes/gerarCartao/{idCliente}', 'clientesController@gerarCartao')->name('clientes.gerarCartao');
+    Route::get('/clientes/gerarCartao/{cliente}', 'clientesController@gerarCartao')->name('clientes.gerarCartao');
 });
 
 // ROTAS DE EMPRESAS
@@ -56,4 +56,5 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\configUser')->group
 Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->group(function(){
     Route::get('/galaxPay/generateAcessToken', 'galaxPayControllerAPI@generateAcessToken')->name('galaxpay.accessToken');
     Route::get('/galaxPay/importaClientesGalaxPay', 'galaxPayControllerAPI@importaClientesGalaxPay')->name('galaxpay.clientes');
+    Route::get('/galaxPay/pesquisaCliente/{searchOption}/{search}', 'galaxPayControllerAPI@pesquisaClientesGalaxPay')->name('galaxpay.pesquisaClientes');
 });

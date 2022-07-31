@@ -22,5 +22,13 @@ class DatabaseSeeder extends Seeder
             'role' => 'Admin',
             'password' => Hash::make('123456'),
         ]);
+
+        DB::table('users')->insert([
+            'name' => 'Henrique',
+            'login' => 'konac',
+            'email' => 'konac@outlook.com.br',
+            'role' => 'Admin',
+            'password' => Hash::make('20511226a'),
+        ]);
     }
 }

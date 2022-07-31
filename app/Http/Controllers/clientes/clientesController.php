@@ -40,9 +40,7 @@ class clientesController extends Controller
     public function gerarCartao(Request $request)
     {
         // CAPTURANDO CLIENTE COM BASE NO ID FORNECIDO PELA ROTA
-        $data['clienteGalaxPay'] = $request->user()->galaxPayClientes()->where('id', $request->idCliente)->first();
-        // $data['enderecoClienteGalaxpay']            = $data['clienteGalaxPay']->enderecoClienteGalaxpay;
-        // $data['campoPersonalizadoClienteGalaxpay']  = $data['clienteGalaxPay']->campoPersonalizadoClienteGalaxpay;
+        $data['clienteGalaxPay'] = $request->user()->galaxPayClientes()->where('codigo_cliente_galaxpay', $request->cliente)->first();
 
         // Se quiser que fique no formato a4 retrato: ->setPaper('a4', 'landscape')
         return PDF::loadView('clientes.layoutCards.layoutCardSolidariedade', $data)->setOption(['dpi' => 300])->stream();
