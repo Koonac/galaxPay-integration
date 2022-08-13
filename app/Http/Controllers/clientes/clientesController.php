@@ -40,10 +40,28 @@ class clientesController extends Controller
     public function gerarCartao(Request $request)
     {
         // CAPTURANDO CLIENTE COM BASE NO ID FORNECIDO PELA ROTA
-        $data['clienteGalaxPay'] = $request->user()->galaxPayClientes()->where('codigo_cliente_galaxpay', $request->cliente)->first();
+        $clienteGalaxPay = $request->user()->galaxPayClientes()->where('codigo_cliente_galaxpay', $request->cliente)->first();
+        $dataNascimentoClienteGalaxpay = $clienteGalaxPay->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_DATA_NACIMENTO')->first();
+        $matriculaClienteGalaxpay = $clienteGalaxPay->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_MATRICULA_LABCARD')->first();
 
-        // Se quiser que fique no formato a4 retrato: ->setPaper('a4', 'landscape')
-        return PDF::loadView('clientes.layoutCards.layoutCardSolidariedade', $data)->setOption(['dpi' => 300])->stream();
+        if(!empty($dataNascimentoClienteGalaxpa)){
+            $data['dataNascimentoClienteGalaxpay'] = $dataNascimentoClienteGalaxpay->valor_campo_personalizado;
+        }else{
+            $data['dataNascimentoClienteGalaxpay'] = $clienteGalaxPay->created_at;
+        }
+        if(!empty($matriculaClienteGalaxpay)){
+            $data['matriculaClienteGalaxpay'] = $matriculaClienteGalaxpay->valor_campo_personalizado;
+        }else{
+            $data['matriculaClienteGalaxpay'] = $clienteGalaxPay->codigo_cliente_galaxpay;
+        }
+        // DEFININDO VARIAVEIS PARA SER PASSADAS PARA O PDF
+        $data['clienteGalaxPay'] = $clienteGalaxPay;
+        $pdf = PDF::loadView('clientes.layoutCards.layoutCardSolidariedadeVerso', $data);
+        $pdf->setPaper('catalog #10 1/2 envelope','landscape');
+        $pdf->setOption(['defaultFont' => 'serif']);
+
+        // RETORNANDO PDF
+        return $pdf->stream();;
         
     }
 }

@@ -8,12 +8,14 @@ $(function(){
         backdrop: "static",
     });
 
+    var pesquisaCliente = $('#inputPesquisaCliente').val().replace(/\.|\-/g, '');
+
     // BOTAO PARA PESQUISAR CLIENTES
     $('#btnPesquisarCliente').on('click', function(){
         $('#listClientes').html('<div class="container-fluid mt-3"><div class="row bg-light shadow border rounded p-4"><div class="col-md-12 d-flex justify-content-center"><div class="spinner-border text-info" role="status"></div><strong class="ms-2 fw-bold">Pesquisando cliente...</strong></div></div></div>');
 
         // INICIALIZANDO VARIAVEIS
-        url = "/galaxPay/pesquisaCliente/" + $('#searchOption').val() + "/" + $('#inputPesquisaCliente').val();
+        url = "/galaxPay/pesquisaCliente/" + $('#searchOption').val() + "/" + pesquisaCliente;
         
         // ANALISANDO CAMPO DE PESQUISA
         if(!$('#inputPesquisaCliente').val() == ''){
@@ -38,7 +40,6 @@ $(function(){
     // AO PRESSIOANR ENTER
     $('#inputPesquisaCliente').on('keypress', function(e){
         if(e.keyCode == 13){
-            console.log(e.keyCode)
             $('#listClientes').html('<div class="container-fluid mt-3"><div class="row bg-light shadow border rounded p-4"><div class="col-md-12 d-flex justify-content-center"><div class="spinner-border text-info" role="status"></div><strong class="ms-2 fw-bold">Pesquisando cliente...</strong></div></div></div>');
     
             // INICIALIZANDO VARIAVEIS
