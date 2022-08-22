@@ -6,8 +6,8 @@
                 <div class="input-group">
                     <select class="form-select" id="searchOption">
                         <option value="myIds">Meu ID</option>
-                        <option value="galaxPayIds" selected>GalaxPay ID</option>
-                        <option value="documents">CPF ou CNPJ</option>
+                        <option value="galaxPayIds">GalaxPay ID</option>
+                        <option value="documents" selected>CPF ou CNPJ</option>
                       </select>
                     <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente">
                     <button type="button" id='btnPesquisarCliente' class="btn btn-info text-white fw-bold">Pesquisar</button>
@@ -19,10 +19,6 @@
     <x-messages.returnMessages>
     </x-messages.returnMessages>
     
-    {{-- INCLUINDO MODAL DE LOADING --}}
-    <x-modals.loading>
-    </x-modals.loading>
-
     {{-- LISTANDO CLIENTES --}}
     <div id='listClientes'>
         @if (!isset($galaxPayClientes))

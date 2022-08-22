@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 // ROTAS DE LOGIN
-Route::namespace('App\Http\Controllers\login')->group(function(){
+Route::namespace('App\Http\Controllers\login')->group(function () {
     Route::get('', 'loginController')->name('login');
     Route::post('/verificaLogin', 'loginController@verificaLogin')->name('verificaLogin');
     Route::get('/cadastraLogin', 'loginController@cadastraLogin')->name('cadastraLogin');
@@ -23,29 +23,29 @@ Route::namespace('App\Http\Controllers\login')->group(function(){
 });
 
 // ROTAS DA HOME
-Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(function () {
     Route::get('home', 'homeController')->name('home');
 });
 
 // ROTAS DE CLIENTES
-Route::middleware(['auth'])->namespace('App\Http\Controllers\clientes')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\clientes')->group(function () {
     Route::get('/clientes', 'clientesController')->name('clientes');
     Route::get('/clientes/pesquisa/{pesquisaCliente}', 'clientesController@pesquisaCliente')->name('pesquisaCliente');
-    Route::get('/clientes/gerarCartao/{cliente}', 'clientesController@gerarCartao')->name('clientes.gerarCartao');
+    Route::get('/clientes/gerarCartao', 'clientesController@gerarCartao')->name('clientes.gerarCartao');
 });
 
 // ROTAS DE EMPRESAS
-Route::middleware(['auth'])->namespace('App\Http\Controllers\empresas')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\empresas')->group(function () {
     Route::get('/empresas', 'empresasController')->name('empresas');
 });
 
 // ROTAS DA RELATÓRIOS
-Route::middleware(['auth'])->namespace('App\Http\Controllers\relatorios')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\relatorios')->group(function () {
     Route::get('/relatorios', 'relatoriosController')->name('relatorios');
 });
 
 // ROTAS DE CONFIGURAÇÕES DO USUARIO LOGADO
-Route::middleware(['auth'])->namespace('App\Http\Controllers\configUser')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\configUser')->group(function () {
     Route::get('/perfil', 'perfilController')->name('perfil');
     Route::put('/perfil/alterarSenha/{idUserEdit}', 'perfilController@editPassword')->name('editPassword');
     Route::put('/perfil/atualizaUsuario/{idUserEdit}', 'perfilController@editUser')->name('editUser');
@@ -53,7 +53,7 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\configUser')->group
 });
 
 // ROTAS DA API - GALAXPAY
-Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->group(function(){
+Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->group(function () {
     Route::get('/galaxPay/generateAcessToken', 'galaxPayControllerAPI@generateAcessToken')->name('galaxpay.accessToken');
     Route::get('/galaxPay/importaClientesGalaxPay', 'galaxPayControllerAPI@importaClientesGalaxPay')->name('galaxpay.clientes');
     Route::get('/galaxPay/pesquisaCliente/{searchOption}/{search}', 'galaxPayControllerAPI@pesquisaClientesGalaxPay')->name('galaxpay.pesquisaClientes');

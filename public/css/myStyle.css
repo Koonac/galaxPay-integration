@@ -1,3 +1,13 @@
-a>label{
+a>label {
     cursor: pointer;
+}
+
+.cursorPointer {
+    cursor: pointer;
+}
+
+
+.rotate:hover {
+    animation-duration: 1s;
+    transform: rotate(90deg);
 }

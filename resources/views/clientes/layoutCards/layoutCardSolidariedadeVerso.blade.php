@@ -3,12 +3,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Imprimir cartão {{strtoupper($clienteGalaxPay->nome_cliente)}}</title>
+<title>Imprimir cartão {{strtoupper($cardImpressao[0]['nomeCliente'])}}</title>
 <style>
    @page {
           margin: 0px 0px 0px 0px !important;
           padding: 0px 0px 0px 0px !important;
         }
+  .page-break {
+     page-break-after: always; 
+  }
   .cardImage{
     background-image:url("{{public_path('assets/layoutCards/cartaoSoliVerso.jpg')}}");
     background-repeat:no-repeat;
@@ -76,6 +79,7 @@
 </head>
 
 <body>
+  @for ($i = 0; $i < $qtdImpressao; $i++)
   {{-- <div class="cardImage"> --}}
     <table class="card">
       <thead>
@@ -90,15 +94,15 @@
           <td height='40mm'></td>
         </tr>
         <tr>
-          <td style="padding-left: 4mm; padding-top: 10mm; height: 28mm; display:inline-block;"><span class='fontTextCard' name='nomeCliente'>{{strtoupper($clienteGalaxPay->nome_cliente)}}</span></td>
-          <td><span class='dataCard' name='dataEmissao' style="padding: 0;">{{date('d/m/Y', strtotime($clienteGalaxPay->createdAt))}}</span></td>
+          <td style="padding-left: 4mm; padding-top: 10mm; height: 28mm; display:inline-block;"><span class='fontTextCard' name='nomeCliente'>{{strtoupper($cardImpressao[$i]['nomeCliente'])}}</span></td>
+          <td><span class='dataCard' name='dataEmissao' style="padding: 0;">{{date('d/m/Y', strtotime($cardImpressao[$i]['dataEmissão']))}}</span></td>
         </tr>
         <tr>
           <td height='16mm'></td>
           <td height='16mm'></td>
         </tr>
         <tr>
-          <td height='28mm' style="padding-left: 4mm; padding-top: 10mm;"><span class='fontTextCard' name='matricula'>{{strtoupper($matriculaClienteGalaxpay)}}</span></td>
+          <td height='28mm' style="padding-left: 4mm; padding-top: 10mm;"><span class='fontTextCard' name='matricula'>{{strtoupper($cardImpressao[$i]['matriculaCliente'])}}</span></td>
           <td height='28mm'></td>
         </tr>
         <tr>
@@ -106,13 +110,17 @@
           <td height='16mm'></td>
         </tr>
         <tr>
-          <td height='28mm' style="padding-left: 4mm; padding-top: 5mm;"><span class='fontTextCard' name='dataNascimento'>{{date('d/m/Y', strtotime($dataNascimentoClienteGalaxpay))}}</span></td>
+          <td height='28mm' style="padding-left: 4mm; padding-top: 5mm;"><span class='fontTextCard' name='dataNascimento'>{{date('d/m/Y', strtotime($cardImpressao[$i]['dataNascimentoCliente']))}}</span></td>
           <td height='28mm'></td>
         </tr>
       </tbody>
     </table>
   {{-- </div> --}}
-      
+  @if (($qtdImpressao > 1) && ($i + 1 != $qtdImpressao))
+    <div class="page-break"></div>
+  @endif
+  @endfor
+  
   <script>
     window.print();
   </script>

@@ -10,11 +10,12 @@ use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use PhpParser\Node\Expr\Print_;
+use stdClass;
 
 class galaxPayControllerAPI extends Controller
 {
-    public function generateAcessToken(Request $request){
+    public function generateAcessToken(Request $request)
+    {
 
         // PERMISSÕES PARA GERAR O TOKEN
         $permissoesApi = 'customers.read customers.write plans.read plans.write transactions.read transactions.write webhooks.write cards.read cards.write card-brands.read subscriptions.read subscriptions.write charges.read charges.write boletos.read';
@@ -23,7 +24,7 @@ class galaxPayControllerAPI extends Controller
         $galaxPayParametros = $request->user()->galaxPayParametros;
 
         // ANALISANDO SE EXISTEM PARAMETROS DEFINIDOS
-        if((empty($galaxPayParametros)) || $galaxPayParametros->count() <= 0){
+        if ((empty($galaxPayParametros)) || $galaxPayParametros->count() <= 0) {
             $retorno['statusRetorno'] = 'ERRO';
             $retorno['msgErro'] = 'Parametros de conexão com GalaxPay não encontrados.';
             return $retorno;
@@ -34,41 +35,45 @@ class galaxPayControllerAPI extends Controller
         $galaxHash      = $galaxPayParametros->galax_hash;
         $accessToken    = $galaxPayParametros->galax_token;
 
+        // TRAZENDO DATA DE CADASTRO DO TOKEN
         $dateRefresh = DateTime::createFromFormat('Y-m-d H:i:s', $galaxPayParametros->refresh_token);
-        $now = DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
-        $timeDiff = date_diff($dateRefresh, $now);       
+        // INICILIZANDO VARIAVEL COM A DATA ATUAL
+        $expiracaoToken = DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
+        // RETIRANDO 10 MINUTOS DA DATA ATUAL PARA COMPARAÇÃO
+        $expiracaoToken->sub(new DateInterval('PT10M'));
 
-        if($timeDiff->i >= 10){
+        if ($expiracaoToken > $dateRefresh) {
             // MONTANDO CORPO PARA ENVIO API
             $response = Http::withHeaders([
-                'Authorization' => 'Basic '. base64_encode("$galaxId:$galaxHash"),
+                'Authorization' => 'Basic ' . base64_encode("$galaxId:$galaxHash"),
                 'Content-Type' => 'application/json'
-                ])->withBody(json_encode([
-                    'grant_type' => 'authorization_code',
-                    'scope' => $permissoesApi
-                ]), 'json')->post('https://api.galaxpay.com.br/v2/token');
-    
+            ])->withBody(json_encode([
+                'grant_type' => 'authorization_code',
+                'scope' => $permissoesApi
+            ]), 'json')->post('https://api.galaxpay.com.br/v2/token');
+
             // SALVANDO TOKEN NO BANCO DE DADOS 
-            $galaxPayParametros->galax_token = $response['access_token']; 
-            $galaxPayParametros->refresh_token = $now; 
+            $galaxPayParametros->galax_token = $response['access_token'];
+            $galaxPayParametros->refresh_token = DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
             $galaxPayParametros->save();
-            
+
             $accessToken = $response['access_token'];
         }
-        
+
         //RETORNANDO RESPOSTA
         $retorno['statusRetorno'] = 'SUCCESS';
-        $retorno['access_token'] = $accessToken; 
+        $retorno['access_token'] = $accessToken;
         return $retorno;
     }
 
-    public function importaClientesGalaxPay(Request $request){
+    public function importaClientesGalaxPay(Request $request)
+    {
         // CAPTURANDO ACCESS TOKEN
-        $generateAcessToken = $this->generateAcessToken($request); 
+        $generateAcessToken = $this->generateAcessToken($request);
         // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
-        if($generateAcessToken['statusRetorno'] != 'SUCCESS'){
+        if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
             // REDIRECIONANDO COM ERRO
-            return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);    
+            return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);
         }
         $accessToken                = $generateAcessToken['access_token'];
         $lacoCliente                = true;
@@ -77,9 +82,9 @@ class galaxPayControllerAPI extends Controller
         $startAt                    = 0;
         $controleLaco = 0;
 
-        while($lacoCliente){
+        while ($lacoCliente) {
             set_time_limit(0);
-            if($controleLaco == 5){
+            if ($controleLaco == 5) {
                 sleep(2);
                 $controleLaco = 0;
             }
@@ -93,21 +98,21 @@ class galaxPayControllerAPI extends Controller
             $response = json_decode($response);
 
             // VERIFICANDO ERRO
-            if(!empty($response->error)){
+            if (!empty($response->error)) {
                 // REDIRECIONANDO COM ERRO
                 return redirect()->back()->withErrors(['Erro: ' . $response->error->message]);
-            }else{
+            } else {
                 // ANALISANDO TOTAL DE REGISTROS
                 $totalRegistrosCapturados += $response->totalQtdFoundInPage;
 
-                if($totalRegistrosCapturados <= 0){
+                if ($totalRegistrosCapturados <= 0) {
                     // REDIRECIONANDO COM ERRO
                     return redirect()->back()->with(['WARNING' => ['Não há registros para sincronização']]);
-                }else{
+                } else {
                     // PERCORRENDO LAÇO
-                    foreach($response->Customers as $customer){
+                    foreach ($response->Customers as $customer) {
                         $listClientesGalaxpay['listClientesGalaxpay'][] = $customer;
-                         // INICIALIZANDO VARIAVEIS
+                        // INICIALIZANDO VARIAVEIS
                         $codigoClienteGalaxpay          = $customer->galaxPayId;
                         $nomeCliente                    = $customer->name;
                         $cpfCnpjCliente                 = $customer->document;
@@ -131,31 +136,31 @@ class galaxPayControllerAPI extends Controller
                         $cadastraEnderecoCliente        = true;
                         // CAMPOS EXTRAS
                         $campoExtras                    = $customer->ExtraFields;
-            
+
                         // PERCORRENDO LAÇO DE ENDEREÇOS
-                        foreach($customer->Address as $keyAddress => $valueAddress){
+                        foreach ($customer->Address as $keyAddress => $valueAddress) {
                             // ANALISANDO SE O CAMPO COMPLEMENT É VAZIO
-                            if($keyAddress == 'complement' && empty($valueAddress)) continue;
-            
+                            if ($keyAddress == 'complement' && empty($valueAddress)) continue;
+
                             // ANALISANDO SE EXISTE ALGUM CAMPO VAZIO NO ENDEREÇO
-                            if(empty($valueAddress)){
+                            if (empty($valueAddress)) {
                                 $cadastraEnderecoCliente = false;
                             };
                         }
-                        
+
                         // CRIANDO MODEL 
                         $galaxPayClientesAssociado = $request->user()->galaxPayClientes();
-            
+
                         // VERIFICANDO SE O CLIENTE JA ESTA CADASTRADO
                         $clienteCadastrado = $galaxPayClientesAssociado->firstWhere('codigo_cliente_galaxpay', $codigoClienteGalaxpay);
-            
+
                         // CASO SEJA ENCONTRADO REFAZ O LAÇO
-                        if(!empty($clienteCadastrado)) continue;
-            
+                        if (!empty($clienteCadastrado)) continue;
+
                         // CRIANDO MODELS PARA INSERIR
                         $clienteGalaxpay                    = new clientes_galaxpay();
                         $enderecoClienteGalaxpay            = new endereco_cliente_galaxpay();
-                        
+
                         // ATRIBUINDO VALORES AO MODEL
                         $clienteGalaxpay->codigo_cliente_galaxpay          = $codigoClienteGalaxpay;
                         $clienteGalaxpay->nome_cliente                     = $nomeCliente;
@@ -170,22 +175,24 @@ class galaxPayControllerAPI extends Controller
                         $clienteGalaxpay->createdAt                        = $createdAt;
                         $clienteGalaxpay->updatedAt                        = $updatedAt;
                         // ENDEREÇO CLIENTE
-                        $enderecoClienteGalaxpay->cep               = $cep;                            
-                        $enderecoClienteGalaxpay->logradouro        = $logradouro;                     
-                        $enderecoClienteGalaxpay->numero            = $numero;                         
-                        $enderecoClienteGalaxpay->complemento       = $complemento;                    
-                        $enderecoClienteGalaxpay->bairro            = $bairro;                         
-                        $enderecoClienteGalaxpay->cidade            = $cidade;                         
+                        $enderecoClienteGalaxpay->cep               = $cep;
+                        $enderecoClienteGalaxpay->logradouro        = $logradouro;
+                        $enderecoClienteGalaxpay->numero            = $numero;
+                        $enderecoClienteGalaxpay->complemento       = $complemento;
+                        $enderecoClienteGalaxpay->bairro            = $bairro;
+                        $enderecoClienteGalaxpay->cidade            = $cidade;
                         $enderecoClienteGalaxpay->estado            = $estado;
-                        
+
                         // SALVANDO NO BANCO DE DADOS
                         $galaxPayClientesAssociado->save($clienteGalaxpay);
-                        if($cadastraEnderecoCliente) { $clienteGalaxpay->enderecoClienteGalaxpay()->save($enderecoClienteGalaxpay); };
-            
+                        if ($cadastraEnderecoCliente) {
+                            $clienteGalaxpay->enderecoClienteGalaxpay()->save($enderecoClienteGalaxpay);
+                        };
+
                         // VERIFICANDO CAMPOS EXTRAS
-                        if(!empty($campoExtras)){
+                        if (!empty($campoExtras)) {
                             // PERCORRENDO LAÇO
-                            foreach($campoExtras as $campoExtras){
+                            foreach ($campoExtras as $campoExtras) {
                                 // CRIANDO MODEL PARA INSERT
                                 $campoPersonalizadoClienteGalaxpay[]  = new campo_personalizado_cliente_galaxpay([
                                     'nome_campo_personalizado' => $campoExtras->tagName,
@@ -194,22 +201,21 @@ class galaxPayControllerAPI extends Controller
                             }
                             // INSERIDNO CAMPOS EXTRAS NO BANCO
                             $clienteGalaxpay->campoPersonalizadoClienteGalaxpay()->saveMany($campoPersonalizadoClienteGalaxpay);
-                            
+
                             // ZERANDO VARIAVEL
                             unset($campoPersonalizadoClienteGalaxpay);
                         }
-            
+
                         // INCREMENTANDO VARIAVEL
                         $registrosImportados++;
                     }
-
                 }
 
                 // DEFININDO POR ONDE DEVE COMEÇAR A PESQUISAR NOVOS CLIENTES 
                 $startAt = $totalRegistrosCapturados;
 
                 // ANALISANDO SE JA CHEGOU NO LIMITE
-                if($response->totalQtdFoundInPage < 100){
+                if ($response->totalQtdFoundInPage < 100) {
                     $lacoCliente = false;
                 }
             }
@@ -221,13 +227,14 @@ class galaxPayControllerAPI extends Controller
         return redirect()->back()->with('SUCCESS', ["Foram importado(s) $registrosImportados novo(s) registros."]);
     }
 
-    public function pesquisaClientesGalaxPay(Request $request){
+    public function pesquisaClientesGalaxPay(Request $request)
+    {
         // CAPTURANDO ACCESS TOKEN
-        $generateAcessToken = $this->generateAcessToken($request); 
+        $generateAcessToken = $this->generateAcessToken($request);
         // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
-        if($generateAcessToken['statusRetorno'] != 'SUCCESS'){
+        if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
             // REDIRECIONANDO COM ERRO
-            return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);    
+            return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);
         }
         $search                     = $request->search;
         $searchOption               = $request->searchOption;
@@ -236,10 +243,10 @@ class galaxPayControllerAPI extends Controller
         $totalRegistrosCapturados   = 0;
         $registrosImportados        = 0;
         $startAt                    = 0;
-        $controleLaco               = 0;    
+        $controleLaco               = 0;
         // CRIANDO MODEL 
         $galaxPayClientesAssociado = $request->user()->galaxPayClientes();
-        
+
         switch ($searchOption) {
             case 'myIds':
                 // VERIFICANDO SE O CLIENTE JA ESTA CADASTRADO
@@ -254,33 +261,33 @@ class galaxPayControllerAPI extends Controller
                 $clienteCadastrado = $galaxPayClientesAssociado->firstWhere('cpf_cnpj_cliente', $search);
                 break;
         }
-                                    
-        if(empty($clienteCadastrado)){
-            while($lacoCliente){
+
+        if (empty($clienteCadastrado)) {
+            while ($lacoCliente) {
                 // MONTANDO CORPO PARA ENVIO DA API
                 $response = Http::withHeaders([
                     'Authorization' => "Bearer $accessToken",
                     'Content-Type' => 'application/json'
                 ])->get("https://api.galaxpay.com.br/v2/customers?$searchOption=$search&startAt=$startAt&limit=100");
-                    
+
                 // CAPTURANDO RESPOSTA DA API
                 $response = json_decode($response);
 
                 // VERIFICANDO ERRO
-                if(!empty($response->error)){
+                if (!empty($response->error)) {
                     // REDIRECIONANDO COM ERRO
-                    return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ ' . $response->error->message . ' ]' ]]);
-                }else{
+                    return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ ' . $response->error->message . ' ]']]);
+                } else {
                     // ANALISANDO TOTAL DE REGISTROS
                     $totalRegistrosCapturados += $response->totalQtdFoundInPage;
-                    
+
                     // ANALISANDO QUANTIDADE DE REGISTRO
-                    if($totalRegistrosCapturados <= 0){
+                    if ($totalRegistrosCapturados <= 0) {
                         // REDIRECIONANDO COM WARNING
                         return view('components.messages.returnMessages', ['WARNING' => ['Nenhum registro encontrado.']]);
-                    }else{
+                    } else {
                         // PERCORRENDO LAÇO
-                        foreach($response->Customers as $customer){
+                        foreach ($response->Customers as $customer) {
                             $listClientesGalaxpay['listClientesGalaxpay'][] = $customer;
                             // INICIALIZANDO VARIAVEIS
                             $meuId                          = $customer->myId;
@@ -307,31 +314,34 @@ class galaxPayControllerAPI extends Controller
                             $cadastraEnderecoCliente        = true;
                             // CAMPOS EXTRAS
                             $campoExtras                    = $customer->ExtraFields;
-    
+                            // GERANDO NUMERO DE MATRICULA
+                            $matricula = str_pad(date('Y') . $codigoClienteGalaxpay, 10, 0);
+
                             // PERCORRENDO LAÇO DE ENDEREÇOS
-                            foreach($customer->Address as $keyAddress => $valueAddress){
+                            foreach ($customer->Address as $keyAddress => $valueAddress) {
                                 // ANALISANDO SE O CAMPO COMPLEMENT É VAZIO
-                                if($keyAddress == 'complement' && empty($valueAddress)) continue;
-                
+                                if ($keyAddress == 'complement' && empty($valueAddress)) continue;
+
                                 // ANALISANDO SE EXISTE ALGUM CAMPO VAZIO NO ENDEREÇO
-                                if(empty($valueAddress)){
+                                if (empty($valueAddress)) {
                                     $cadastraEnderecoCliente = false;
                                 };
                             }
-                                        
+
                             // VERIFICANDO SE O CLIENTE JA ESTA CADASTRADO
                             $clienteCadastrado = $galaxPayClientesAssociado->firstWhere('codigo_cliente_galaxpay', $codigoClienteGalaxpay);
-    
+
                             // CASO SEJA ENCONTRADO REFAZ O LAÇO
-                            if(!empty($clienteCadastrado)) continue;
-    
+                            if (!empty($clienteCadastrado)) continue;
+
                             // CRIANDO MODELS PARA INSERIR
                             $clienteGalaxpay                    = new clientes_galaxpay();
                             $enderecoClienteGalaxpay            = new endereco_cliente_galaxpay();
-                            
+
                             // ATRIBUINDO VALORES AO MODEL
                             $clienteGalaxpay->codigo_cliente_galaxpay          = $codigoClienteGalaxpay;
                             $clienteGalaxpay->meu_id                           = $meuId;
+                            $clienteGalaxpay->matricula                        = $matricula;
                             $clienteGalaxpay->nome_cliente                     = $nomeCliente;
                             $clienteGalaxpay->cpf_cnpj_cliente                 = $cpfCnpjCliente;
                             $clienteGalaxpay->email_cliente_1                  = $emailCliente1;
@@ -344,22 +354,23 @@ class galaxPayControllerAPI extends Controller
                             $clienteGalaxpay->createdAt                        = $createdAt;
                             $clienteGalaxpay->updatedAt                        = $updatedAt;
                             // ENDEREÇO CLIENTE
-                            $enderecoClienteGalaxpay->cep               = $cep;                            
-                            $enderecoClienteGalaxpay->logradouro        = $logradouro;                     
-                            $enderecoClienteGalaxpay->numero            = $numero;                         
-                            $enderecoClienteGalaxpay->complemento       = $complemento;                    
-                            $enderecoClienteGalaxpay->bairro            = $bairro;                         
-                            $enderecoClienteGalaxpay->cidade            = $cidade;                         
+                            $enderecoClienteGalaxpay->cep               = $cep;
+                            $enderecoClienteGalaxpay->logradouro        = $logradouro;
+                            $enderecoClienteGalaxpay->numero            = $numero;
+                            $enderecoClienteGalaxpay->complemento       = $complemento;
+                            $enderecoClienteGalaxpay->bairro            = $bairro;
+                            $enderecoClienteGalaxpay->cidade            = $cidade;
                             $enderecoClienteGalaxpay->estado            = $estado;
-                            
+
                             // SALVANDO NO BANCO DE DADOS
                             $galaxPayClientesAssociado->save($clienteGalaxpay);
-                            if($cadastraEnderecoCliente) { $clienteGalaxpay->enderecoClienteGalaxpay()->save($enderecoClienteGalaxpay); };
-    
+                            if ($cadastraEnderecoCliente) {
+                                $clienteGalaxpay->enderecoClienteGalaxpay()->save($enderecoClienteGalaxpay);
+                            };
                             // VERIFICANDO CAMPOS EXTRAS
-                            if(!empty($campoExtras)){
+                            if (!empty($campoExtras)) {
                                 // PERCORRENDO LAÇO
-                                foreach($campoExtras as $campoExtras){
+                                foreach ($campoExtras as $campoExtras) {
                                     // CRIANDO MODEL PARA INSERT
                                     $campoPersonalizadoClienteGalaxpay[]  = new campo_personalizado_cliente_galaxpay([
                                         'nome_campo_personalizado' => $campoExtras->tagName,
@@ -368,33 +379,56 @@ class galaxPayControllerAPI extends Controller
                                 }
                                 // INSERIDNO CAMPOS EXTRAS NO BANCO
                                 $clienteGalaxpay->campoPersonalizadoClienteGalaxpay()->saveMany($campoPersonalizadoClienteGalaxpay);
-                                
+
                                 // ZERANDO VARIAVEL
                                 unset($campoPersonalizadoClienteGalaxpay);
                             }
-                
+
                             // INCREMENTANDO VARIAVEL
                             $registrosImportados++;
                         }
                     }
-    
+
                     // DEFININDO POR ONDE DEVE COMEÇAR A PESQUISAR NOVOS CLIENTES 
                     $startAt = $totalRegistrosCapturados;
-    
+
                     // ANALISANDO SE JA CHEGOU NO LIMITE
-                    if($response->totalQtdFoundInPage < 100){
+                    if ($response->totalQtdFoundInPage < 100) {
                         $lacoCliente = false;
                     }
                 }
-                $retorno = $clienteGalaxpay;    
+                $retorno = $clienteGalaxpay;
                 $controleLaco++;
             }
-        }else{
+        } else {
             // RETORNO DA FUNÇÃO
             $retorno = $clienteCadastrado;
         }
-  
+
+        // DEFININDO QUANTIDADE DE DEPENDENTE EXISTEM
+        $qtdDependentes = 7;
+        $dependentesCliente = [];
+        for ($i = 1; $i <= $qtdDependentes; $i++) {
+            // INICIALIZANDO VARIAVEIS COM OS CAMPOS EXTRAS DE DEPENDENTES
+            $nomeDependente = $retorno->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_NOME_DEPENDENTE_0' . $i)->first();
+            $cpfDependente = $retorno->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_CPF_DEPENDENTES_0' . $i)->first();
+            $nascimentoDependente = $retorno->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_NASCIMENTO_DEPENDENTE_0' . $i)->first();
+
+            // ANISALISANDO SE EXISTE NOME DE DEPENDENTE
+            if (isset($nomeDependente)) {
+                // ADICIONANDO AO ARRAY
+                $dependentesCliente[] = [
+                    'nomeDependente' => $nomeDependente,
+                    'cpfDependente' => $cpfDependente,
+                    'nascimentoDependente' => $nascimentoDependente
+                ];
+            }
+
+            // RESETANDO VARIAVEL
+            unset($nomeDependente);
+        }
+
         // RETORNANDO VIEW
-        return view('components.listas.listClientes', ['clienteGalaxpay' => $retorno]);
+        return view('components.listas.listClientes', ['clienteGalaxpay' => $retorno, 'dependentesCliente' => $dependentesCliente]);
     }
 }
