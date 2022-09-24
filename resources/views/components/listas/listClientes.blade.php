@@ -96,11 +96,13 @@
 </div>
 <x-offcanvas.menuBottom>
     <div class="row justify-content-end">
-        <div class="col-md-12 text-end fw-bold">
-            <p id='textOffcanvas'>Selecionados para impressão</p>
+        <div class="d-none d-sm-block col-sm-7 col-md-8 col-lg-9 text-end fw-bold">
+            <span id='textOffcanvas'>Selecionados para impressão</span>
+        </div>
+        <div class="col-sm-5 col-md-4 col-lg-3 text-center text-sm-end fw-bold">
             <button id="btnImprimirCard" class="btn btn-warning text-white fw-bold">
                 <i class='fa-solid fa-address-card'></i>
-                <label>Imprimir selecionados</label>
+                Imprimir selecionados
             </button>
         </div>
     </div>

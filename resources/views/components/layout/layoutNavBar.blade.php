@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Card GalaxPay</title>
     {{-- IMPORTANDO CSS --}}
-    <link rel="stylesheet" href="{{asset('css/bootstrap.css')}}">
+    <link rel="stylesheet" href="{{asset('css/myBootstrap.css')}}">
     <link rel="stylesheet" href="{{asset('css/myStyle.css')}}">
     
     {{-- IMPORTANDO SCRIPTS --}}

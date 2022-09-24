@@ -12,8 +12,8 @@ const mix = require('laravel-mix');
  */
 
 mix
-    .sass('node_modules/bootstrap/scss/bootstrap.scss', 'public/css/bootstrap.css')
-    
+    .sass('public/scss/myStyle.scss', 'public/css/myBootstrap.css')
+
     .scripts('node_modules/jquery/dist/jquery.js', 'public/js/jquery.js')
     .scripts('node_modules/jquery-mask-plugin/dist/jquery.mask.js', 'public/js/jqueryMask.js')
     .scripts('node_modules/bootstrap/dist/js/bootstrap.bundle.js', 'public/js/bootstrap.js')

@@ -4,6 +4,7 @@ $(function () {
 
     // BOTAO PARA PESQUISAR CLIENTES
     $('#btnPesquisarCliente').on('click', function () {
+
         var pesquisaCliente = $('#inputPesquisaCliente').val().replace(/\.|\-/g, '');
 
         $('#listClientes').html('<div class="container-fluid mt-3"><div class="row bg-light shadow border rounded p-4"><div class="col-md-12 d-flex justify-content-center"><div class="spinner-border text-info" role="status"></div><strong class="ms-2 fw-bold">Pesquisando cliente...</strong></div></div></div>');
@@ -32,7 +33,6 @@ $(function () {
     // AO PRESSIOANR ENTER
     $('#inputPesquisaCliente').on('keypress', function (e) {
         var pesquisaCliente = $('#inputPesquisaCliente').val().replace(/\.|\-/g, '');
-
         if (e.keyCode == 13) {
             $('#listClientes').html('<div class="container-fluid mt-3"><div class="row bg-light shadow border rounded p-4"><div class="col-md-12 d-flex justify-content-center"><div class="spinner-border text-info" role="status"></div><strong class="ms-2 fw-bold">Pesquisando cliente...</strong></div></div></div>');
 

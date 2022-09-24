@@ -1,7 +1,7 @@
 <x-layout.layoutNavBar>
     <script type="text/javascript" src="{{asset('js/clientes/clientes.js')}}"></script>
     <div class="container-fluid">
-        <div class="row bg-light shadow border rounded p-4">
+        <div id='divseila' class="row bg-light shadow border rounded p-4">
             <div class="col-md-12">
                 <div class="input-group">
                     <select class="form-select" id="searchOption">
@@ -9,7 +9,7 @@
                         <option value="galaxPayIds">GalaxPay ID</option>
                         <option value="documents" selected>CPF ou CNPJ</option>
                       </select>
-                    <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente">
+                    <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente" value="995.772.177-10">
                     <button type="button" id='btnPesquisarCliente' class="btn btn-info text-white fw-bold">Pesquisar</button>
                 </div>
             </div>

@@ -43,6 +43,7 @@ class galaxPayControllerAPI extends Controller
         $expiracaoToken->sub(new DateInterval('PT10M'));
 
         if ($expiracaoToken > $dateRefresh) {
+
             // MONTANDO CORPO PARA ENVIO API
             $response = Http::withHeaders([
                 'Authorization' => 'Basic ' . base64_encode("$galaxId:$galaxHash"),
@@ -56,7 +57,6 @@ class galaxPayControllerAPI extends Controller
             $galaxPayParametros->galax_token = $response['access_token'];
             $galaxPayParametros->refresh_token = DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
             $galaxPayParametros->save();
-
             $accessToken = $response['access_token'];
         }
 
@@ -288,7 +288,7 @@ class galaxPayControllerAPI extends Controller
                     } else {
                         // PERCORRENDO LAÇO
                         foreach ($response->Customers as $customer) {
-                            $listClientesGalaxpay['listClientesGalaxpay'][] = $customer;
+
                             // INICIALIZANDO VARIAVEIS
                             $meuId                          = $customer->myId;
                             $codigoClienteGalaxpay          = $customer->galaxPayId;

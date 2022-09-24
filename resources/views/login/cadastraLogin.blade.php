@@ -7,7 +7,7 @@
     <title>Galax Pay</title>
 
     {{-- IMPORTANDO CSS --}}
-    <link rel="stylesheet" href="{{asset('css/bootstrap.css')}}">
+    <link rel="stylesheet" href="{{asset('css/myBootstrap.css')}}">
     {{-- IMPORTANDO SCRIPTS --}}
     <script src="{{asset('js/bootstrap.js')}}"></script>
     <script src="{{asset('js/jquery.js')}}"></script>
