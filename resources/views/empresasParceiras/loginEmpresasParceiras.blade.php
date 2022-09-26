@@ -21,10 +21,10 @@
                 <div class="row py-2">
                     <div class="col-12">
                         <h3>Bem-vindo</h3>
-                        <h5>Acesso ao painel administrativo</h5>
+                        <h5>Acesso ao painel do colaborador</h5>
                     </div>
                 </div>
-                <form action="{{Route('verificaLogin')}}" method="POST">
+                <form action="{{Route('empresasParceiras.verificaLogin')}}" method="POST">
                     @csrf
                     <div class="row py-2">
                         <div class="col-12">

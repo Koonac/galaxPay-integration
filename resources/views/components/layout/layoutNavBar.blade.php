@@ -25,6 +25,7 @@
           </button>
           <div class="collapse navbar-collapse justify-content-center" id="navBarMenu">
               <ul class="nav nav-pills flex-column flex-md-row pt-4 py-md-1">
+                @can('isAdmin')
                 <li class="nav-item flex-md-fill ">
                   <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="home" id="home" href="{{route('home')}}">Home</a>
                 </li>
@@ -32,7 +33,7 @@
                   <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="clientes" id="clientes" href="{{route('clientes')}}">Clientes</a>
                 </li>
                 <li class="nav-item flex-md-fill">
-                  <a class="btn btn-outline-dark fw-bold text-white border border-info w-100 disabled" name="empresas" id="empresas" href="{{route('empresas')}}">Empresas</a>
+                  <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="empresasParceiras" id="empresasParceiras" href="{{route('empresasParceiras')}}">Empresas</a>
                 </li>
                 <li class="nav-item flex-md-fill">
                   <a class="btn btn-outline-dark fw-bold text-white border border-info w-100 disabled" name="relatorios" id="relatorios" href="{{route('relatorios')}}">Relatórios</a>
@@ -44,6 +45,14 @@
                 <li class="nav-item flex-md-fill">
                   <a class="btn btn-outline-danger fw-bold text-white border border-info w-100 d-md-none" href="{{route('logout')}}">Sair</a>
                 </li>
+                @elsecan('isPartner')
+                  <li class="nav-item flex-md-fill">
+                    <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="clientesStatus" id="clientesStatus" href="{{route('empresasParceiras.clientesStatus')}}">Clientes Status</a>
+                  </li>
+                  <li class="nav-item flex-md-fill">
+                    <a class="btn btn-outline-dark fw-bold text-white border border-info w-100 link-light" name="perfil" id="perfil" href="{{route('empresasParceiras.perfil')}}">Perfil</a>
+                  </li>
+                @endcan
               </ul>
           </div>
           <a class="d-none d-md-block link-dark fw-bold" href="{{route('logout')}}">

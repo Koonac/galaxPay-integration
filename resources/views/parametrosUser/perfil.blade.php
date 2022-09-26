@@ -39,26 +39,28 @@
                     <input class="form-control" name="emailPerfil" id="emailPerfil" type="text" value="{{$user->email}}">
                 </div>
             </div>
-            <div class="row pt-4">
-                <div class="col-12">
-                    <h4 class="fw-bold text-uppercase">INFORMAÇÕES DE CONEXÃO</h4>
+            @can('isAdmin')
+                <div class="row pt-4">
+                    <div class="col-12">
+                        <h4 class="fw-bold text-uppercase">INFORMAÇÕES DE CONEXÃO</h4>
+                    </div>
                 </div>
-            </div>
-            <hr>
-            <div class="row py-2">
-                <div class="col-md-6">
-                    <label class="fw-bold" for="galaxId">GalaxID</label>
-                    <input class="form-control" name="galaxId" id="galaxId" type="text" aria-describedby="helpGalaxConection" value="{{isset($user->galaxPayParametros->galax_id) ? $user->galaxPayParametros->galax_id : ''}}">
+                <hr>
+                <div class="row py-2">
+                    <div class="col-md-6">
+                        <label class="fw-bold" for="galaxId">GalaxID</label>
+                        <input class="form-control" name="galaxId" id="galaxId" type="text" aria-describedby="helpGalaxConection" value="{{isset($user->galaxPayParametros->galax_id) ? $user->galaxPayParametros->galax_id : ''}}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold" for="galaxHash">Galaxhash</label>
+                        <input class="form-control" name="galaxHash" id="galaxHash" type="text" aria-describedby="helpGalaxConection" value="{{isset($user->galaxPayParametros->galax_hash) ? $user->galaxPayParametros->galax_hash : ''}}">
+                    </div>
+                    <div id='helpGalaxConection' class="form-text">
+                        Galax Id e Galax Hash são fornecidos pelo suporte de integração da Galax Pay.
+                        Caso ainda não tenha essas chaves. <a href="https://docs.galaxpay.com.br/suporte" target="_blank">Clique aqui.</a>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="fw-bold" for="galaxHash">Galaxhash</label>
-                    <input class="form-control" name="galaxHash" id="galaxHash" type="text" aria-describedby="helpGalaxConection" value="{{isset($user->galaxPayParametros->galax_hash) ? $user->galaxPayParametros->galax_hash : ''}}">
-                </div>
-                <div id='helpGalaxConection' class="form-text">
-                    Galax Id e Galax Hash são fornecidos pelo suporte de integração da Galax Pay.
-                    Caso ainda não tenha essas chaves. <a href="https://docs.galaxpay.com.br/suporte" target="_blank">Clique aqui.</a>
-                </div>
-            </div>
+            @endcan
 
             {{-- INCLUINDO COMPONENTE DE ALERT MENSAGENS --}}
             <x-messages.returnMessages>

@@ -23,10 +23,10 @@
                 </div>
                 <div class="accordion-item">
                     <div class="row p-2">
-                        <div class="col-md-5 col-lg-5 col-xl-5 cursorPointer" data-bs-toggle="collapse" data-bs-target="#collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}" aria-expanded="false" aria-controls="collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}">
-                            <label class="fw-bold d-block d-md-none">Nome</label>
+                        <div class="col-md-5 col-lg-5 col-xl-5">
+                            <label class="fw-bold d-block d-md-none cursorPointer" data-bs-toggle="collapse" data-bs-target="#collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}" aria-expanded="false" aria-controls="collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}">Nome</label>
                             <input class="form-check-input" type="checkbox" onchange='campoExtraImprimir(this)' value="{{$clienteGalaxpay->codigo_cliente_galaxpay}}" name="checkboxCliente" id="checkboxCliente">
-                            <span class="px-2">{{$clienteGalaxpay->nome_cliente}}</span>
+                            <span class="px-2 cursorPointer" data-bs-toggle="collapse" data-bs-target="#collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}" aria-expanded="false" aria-controls="collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}">{{$clienteGalaxpay->nome_cliente}}</span>
                         </div>
                         <div class="col-md-3 col-lg-3 col-xl-3 cursorPointer" data-bs-toggle="collapse" data-bs-target="#collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}" aria-expanded="false" aria-controls="collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}">
                             <label class="fw-bold d-block d-md-none">Telefone</label>
@@ -36,16 +36,6 @@
                             <label class="fw-bold d-block d-md-none">CPF/CNPJ</label>
                             <span class="cnpjMask">{{$clienteGalaxpay->cpf_cnpj_cliente}}</span>
                         </div>
-                        {{-- <div class="col-md-2 col-lg-2 col-xl-2 d-none d-md-block cursorPointer" data-bs-toggle="collapse" data-bs-target="#collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}" aria-expanded="false" aria-controls="collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}">
-                            <a href="{{route('clientes.gerarCartao', ['cliente' => $clienteGalaxpay->codigo_cliente_galaxpay, 'dependentesCliente' => ['38262', '38262']])}}" target="_blank" class="btn btn-warning text-white fw-bold">
-                                <i class="fa-solid fa-address-card"></i>
-                                <label class="d-none d-xl-inline">Imprimir</label>
-                            </a>
-                            <button type="button" class="btn btn-danger text-white fw-bold">
-                                <i class="fa-solid fa-trash"></i>
-                                <label class="d-none d-xl-inline">Excluir</label>
-                            </button>
-                        </div> --}}
                         <div class="col-1" data-bs-toggle="collapse" data-bs-target="#collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}" aria-expanded="false" aria-controls="collapse-{{$clienteGalaxpay->codigo_cliente_galaxpay}}">
                             <i class="fa-solid fa-angle-right rotate"></i>
                         </div>

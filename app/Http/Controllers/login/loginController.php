@@ -34,9 +34,9 @@ class loginController extends Controller
             'password' => $request->senhaLogin
         ];
 
-        if(Auth::attempt($credenciais)){
+        if (Auth::attempt($credenciais)) {
             return redirect()->route('home');
-        }else{
+        } else {
             return redirect()->back()->withInput()->withErrors(['Usuário/Senha Incorretos']);
         }
     }
@@ -45,12 +45,12 @@ class loginController extends Controller
     {
         return view('login.cadastraLogin');
     }
-    
+
     public function registraLogin(Request $request)
     {
         // CRIANDO MODELO DE USUARIO
         $user = new User();
-        
+
         // DEFININDO VALORES PARA CADASTRO
         $user->name = $request->nameLogin;
         $user->login = $request->userLogin;
@@ -67,11 +67,6 @@ class loginController extends Controller
     public function logout()
     {
         Auth::logout();
-        return redirect()->route('login')->with('SUCCESS', ['Você deslogou com sucesso']);
-    }
-
-    public function test()
-    {
-        return redirect()->route('login')->with('SUCCESS', ['Você deslogou com sucesso', 'Test ok']);
+        return redirect()->route('login')->with('SUCCESS', ['Você deslogou com sucesso.']);
     }
 }

@@ -6,7 +6,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action=" {{route('editPassword', $user->id)}}" method="POST" id="IdFormModal">
+                @can('isAdmin')
+                    <form action="{{route('editPassword', $user->id)}}" method="POST" id="IdFormModal">
+                @elsecan('isPartner')
+                   <form action="{{route('empresasParceiras.editPassword', $user->id)}}" method="POST" id="IdFormModal">
+                @endcan
                     @method('PUT')
                     @csrf
                     {{-- CAMPOS DO MODAL --}}

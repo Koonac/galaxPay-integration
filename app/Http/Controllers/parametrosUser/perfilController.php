@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\configUser;
+namespace App\Http\Controllers\parametrosUser;
 
 use App\Http\Controllers\Controller;
 use App\Models\galaxpay_parametros;
@@ -18,29 +18,28 @@ class perfilController extends Controller
      */
     public function __invoke(Request $request)
     {
-        return view('configUser.perfil', ['user' => $request->user()]);
+        return view('parametrosUser.perfil', ['user' => $request->user()]);
     }
-    
+
     public function editPassword(Request $request)
     {
         $userEdit       = User::find($request->idUserEdit);
         $senhaAntiga    = $request->oldPassword;
-        $novaSenha      = $request->newPassword; 
-        $confirmaSenha  = $request->confirmNewPassword; 
-        
-        if(!Hash::check($senhaAntiga, $userEdit->password)){
+        $novaSenha      = $request->newPassword;
+        $confirmaSenha  = $request->confirmNewPassword;
+
+        if (!Hash::check($senhaAntiga, $userEdit->password)) {
             return redirect()->back()->withInput()->withErrors(["Senha inválida."]);
         }
-        if($novaSenha != $confirmaSenha){
+        if ($novaSenha != $confirmaSenha) {
             return redirect()->back()->withInput()->withErrors(["Senha de confirmação incorreta."]);
         }
-        
+
         // ALTERANDO SNEHA DO USUARIO
-        $novaSenha      = Hash::make($request->newPassword); 
+        $novaSenha      = Hash::make($request->newPassword);
         $userEdit->update(['password' => $novaSenha]);
 
         return redirect()->back()->withInput()->with('SUCCESS', ['Senha alterada com sucesso.']);
-
     }
 
     public function editUser(Request $request)
@@ -52,23 +51,23 @@ class perfilController extends Controller
         $galaxpayParametros = galaxpay_parametros::firstWhere('user_id', $request->idUserEdit);
 
         // VERIFICANDO SE JA EXISTE PARAMETROS ASSOCIADOS A ESTE USER
-        if(empty($galaxpayParametros)){
+        if (empty($galaxpayParametros)) {
             // CASO NAO TENHA CRIA UM NOVO OBJETO
             $galaxpayParametros = new galaxpay_parametros();
             $galaxpayParametros->user_id = $request->idUserEdit;
         }
-                
+
         // ADICIONANDO RECEBIDOS PELO REQUEST AO MODEL
-        $userEdit->name = $request->nomePerfil; 
+        $userEdit->name = $request->nomePerfil;
         // $userEdit->cpf = $request->cpfPerfil;
-        $userEdit->login = $request->usuarioPerfil; 
-        $userEdit->email = $request->emailPerfil; 
+        $userEdit->login = $request->usuarioPerfil;
+        $userEdit->email = $request->emailPerfil;
         $galaxpayParametros->galax_id = $request->galaxId;
         $galaxpayParametros->galax_hash = $request->galaxHash;
-        
+
         $request->empresaPerfil;
         $request->cnpjPerfil;
-        
+
         // SALVANDO ALTERAÇÕES
         $galaxpayParametros->save();
         $userEdit->save();
@@ -78,6 +77,5 @@ class perfilController extends Controller
 
     public function deleteUser(Request $request)
     {
-
     }
 }
