@@ -14,7 +14,7 @@
     <script src="{{asset('js/jquery.js')}}"></script>
 </head>
 <body>
-    <div class="container-fluid float-start vh-100 d-flex align-items-center bg-info">
+    <div class="container-fluid float-start vh-100 d-flex align-items-center bg-primary">
         <div class="row vw-100 justify-content-center bg-white shadow p-5">
             {{-- CAMPO DE LOGIN --}}
             <div class="col-md-4 border rounded bg-light shadow p-4">
@@ -41,6 +41,9 @@
                     <div class="row pt-4 text-center">
                         <div class="col-12">
                             <button class="form-control fw-bold btn btn-info text-white" type="submit">Entrar</button>              
+                            <div class="text-end mt-1">
+                                <a class="" href="{{route('esqueceuSenha')}}">Esqueceu a senha ?</a>
+                            </div>
                         </div>
                     </div>
                 </form>

@@ -15,12 +15,23 @@ class clientes_galaxpay extends Model
      */
     protected $table = 'clientes_galaxpay';
 
-    function enderecoClienteGalaxpay(){
+    function enderecoClienteGalaxpay()
+    {
         return $this->hasOne(endereco_cliente_galaxpay::class, 'cliente_galaxpay_id');
     }
 
-    function campoPersonalizadoClienteGalaxpay(){
+    function campoPersonalizadoClienteGalaxpay()
+    {
         return $this->hasMany(campo_personalizado_cliente_galaxpay::class, 'cliente_galaxpay_id');
     }
-        
+
+    function clientesDependentesGalaxpay()
+    {
+        return $this->hasMany(clientes_dependentes_galaxpay::class, 'cliente_galaxpay_id');
+    }
+
+    function historicoAtendimentoCliente()
+    {
+        return $this->hasMany(historico_atendimento_cliente::class, 'cliente_galaxpay_id');
+    }
 }

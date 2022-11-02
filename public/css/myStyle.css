@@ -6,8 +6,6 @@ a>label {
     cursor: pointer;
 }
 
-
-.rotate:hover {
-    animation-duration: 1s;
-    transform: rotate(90deg);
+.colorNameLayout {
+    color: rgb(0, 0, 0);
 }

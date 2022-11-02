@@ -38,9 +38,12 @@
                             <input class="form-control" type="password" name="senhaLogin" id="senhaLogin" placeholder="Digite sua senha...">                  
                         </div>
                     </div>
-                    <div class="row pt-4 text-center">
+                    <div class="row pt-2 text-center">
                         <div class="col-12">
                             <button class="form-control fw-bold btn btn-info text-white" type="submit">Entrar</button>              
+                            <div class="text-end mt-1">
+                                <a class="" href="{{route('esqueceuSenha')}}">Esqueceu a senha ?</a>
+                            </div>
                         </div>
                     </div>
                 </form>

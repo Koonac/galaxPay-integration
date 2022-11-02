@@ -5,11 +5,10 @@
                 <div class="col-md-12">
                     <div class="input-group">
                         <select class="form-select" id="searchOption">
-                            <option value="myIds">Meu ID</option>
-                            <option value="galaxPayIds">GalaxPay ID</option>
-                            <option value="documents" selected>CPF ou CNPJ</option>
+                            <option value="matricula" selected>Matricula</option>
+                            <option value="cpfCnpj">CPF ou CNPJ</option>
                         </select>
-                        <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente" value="084.367.787-23">
+                        <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente">
                         <button type="button" id='btnPesquisarCliente' class="btn btn-info text-white fw-bold">Pesquisar</button>
                     </div>
                 </div>

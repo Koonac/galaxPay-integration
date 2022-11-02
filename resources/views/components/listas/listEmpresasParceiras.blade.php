@@ -1,31 +1,84 @@
-<div class="container-fluid mt-3">
-    <div class="row bg-light shadow border rounded p-4">
-        <div class="col-md-12">
-            <div class="accordion accordion-flush bg-white p-4 overflow-auto" id="accordionCollapse">
-                <div class="px-2 pb-2 d-none d-md-block">
-                    <div class="row fw-bold">
-                        <div class="col-md-5 col-lg-5 col-xl-5 text-capitalize">
-                            Nome
-                        </div>
-                        <div class="col-md-3 col-lg-3 col-xl-3 text-capitalize">
-                            Telefone
-                        </div>
-                        <div class="col-md-3 col-lg-3 col-xl-3 text-capitalize">
-                            CPF/CNPJ
-                        </div>
-                        {{-- <div class="col-md-2 col-lg-2 col-xl-3 text-capitalize">
-                            Ações
-                        </div> --}}
-                    </div>
-                    <hr>
-                </div>
-                <div class="accordion-item">
-                    <div class="row p-2">
-                        <div class="col-md-5 col-lg-5 col-xl-5">
-                          
-                    </div>
-                </div>
+@if (count($empresasParceiras) <= 0)
+    <div class="alert alert-warning shadow mt-2">
+        Nenhuma empresa cadastrada.
+    </div>
+@else
+<script type="text/javascript" src="{{asset('js/empresasParceiras/listEmpresasParceiras.js')}}"></script>
+    <div class="container-fluid mt-4">
+        <div class="row bg-light shadow border rounded p-4">
+            <div class="col-md-12 table-responsive">
+                <table id="empresasParceirasTable" class="table table-striped">
+                    <thead>
+                        <tr class="fw-bold">
+                            <td>#</td>
+                            <td>Razão Social</td>
+                            <td>Nome Fantasia</td>
+                            <td>CPF/CNPJ</td>
+                            <td>Telefone</td>
+                            <td>Criado</td>
+                            <td width='80px'></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($empresasParceiras as $empresaParceira)
+                            <tr>
+                                <td class='border'>
+                                    {{$empresaParceira->id}}
+                                </td>
+                                <td class='border'>
+                                    {{$empresaParceira->razao_social}}
+                                </td>
+                                <td class='border'>
+                                    {{$empresaParceira->nome_fantasia}}
+                                </td>
+                                <td class='border'>
+                                    <p class="cnpjMask"> {{$empresaParceira->cpf_cnpj}} </p>
+                                </td>
+                                <td class='border'>
+                                    <p class="telefoneMask"> {{$empresaParceira->telefone_1}} </p>
+                                </td>
+                                <td class='border'>
+                                    {{date('d/m/Y H:i', strtotime($empresaParceira->created_at))}}
+                                </td>
+                                <td>
+                                    <table width='100%'>
+                                        <tr>
+                                            <td align="right">
+                                                <button class="btn btn-warning text-white fw-bold" data-bs-toggle='modal' data-bs-target='#modalEditEmpresaParceira{{$empresaParceira->id}}'>Editar</button>
+                                            </td>
+                                            <td align="right">
+                                                <button class="btn btn-danger fw-bold" data-bs-toggle='modal' data-bs-target='#modalConfirmacaoExclusaoEmpresa{{$empresaParceira->id}}'>Excluir</button>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            {{-- MODAL DE EDIT EMPRESA --}}
+                            @include('components.modals.editEmpresaParceira')
+
+                            {{-- MODAL CONFIRMA EXCLUSÃO --}}
+                            <div class="modal fade" id="modalConfirmacaoExclusaoEmpresa{{$empresaParceira->id}}" tabindex="-1" aria-labelledby="formModalTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-uppercase" id="formModalTitle">Confirmação</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Deseja confirma a exclusão da empresa <strong>{{$empresaParceira->razao_social}}</strong> ?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                            <a class="btn btn-success" href="{{route('empresasParceiras.delete', $empresaParceira->id)}}">Confirmar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
+@endif

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,6 +12,11 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
+    }
 
     function galaxPayParametros()
     {
@@ -30,6 +36,21 @@ class User extends Authenticatable
     function empresasAssociadas()
     {
         return $this->hasMany(empresas_parceiras::class, 'user_linked_id');
+    }
+
+    function funcionariosAssociadas()
+    {
+        return $this->hasMany(funcionarios::class, 'user_linked_id');
+    }
+
+    function funcionarioPermissoes()
+    {
+        return $this->hasOne(funcionarios::class, 'user_id');
+    }
+
+    function caixaFinanceiro()
+    {
+        return $this->hasMany(caixa_financeiro::class, 'id_user_abertura');
     }
     /**
      * The attributes that are mass assignable.

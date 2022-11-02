@@ -57,7 +57,7 @@
                     </div>
                     <div id='helpGalaxConection' class="form-text">
                         Galax Id e Galax Hash são fornecidos pelo suporte de integração da Galax Pay.
-                        Caso ainda não tenha essas chaves. <a href="https://docs.galaxpay.com.br/suporte" target="_blank">Clique aqui.</a>
+                        Caso ainda não tenha essas chaves. <a href="https://docs.galaxPay.com.br/suporte" target="_blank">Clique aqui.</a>
                     </div>
                 </div>
             @endcan

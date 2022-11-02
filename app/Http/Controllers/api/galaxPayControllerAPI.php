@@ -4,16 +4,29 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\campo_personalizado_cliente_galaxpay;
+use App\Models\clientes_dependentes_galaxpay;
 use App\Models\clientes_galaxpay;
 use App\Models\endereco_cliente_galaxpay;
 use App\Models\User;
 use DateInterval;
 use DateTime;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class galaxPayControllerAPI extends Controller
 {
+    /**
+     * Handle the incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function __invoke(Request $request)
+    {
+        return view('galaxPay.galaxPayClientes');
+    }
+
     public function generateAcessToken(Request $request)
     {
 
@@ -44,6 +57,7 @@ class galaxPayControllerAPI extends Controller
         // TRAZENDO DATA DE CADASTRO DO TOKEN
         $dateRefresh = DateTime::createFromFormat('Y-m-d H:i:s', $galaxPayParametros->refresh_token);
         // INICILIZANDO VARIAVEL COM A DATA ATUAL
+        // TEM QUE AJSUTAR ISSO, TA DANDO ALGUM BUG AQUI --HENRIQUE DEV
         $expiracaoToken = DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
         // RETIRANDO 10 MINUTOS DA DATA ATUAL PARA COMPARAÇÃO
         $expiracaoToken->sub(new DateInterval('PT10M'));
@@ -57,7 +71,7 @@ class galaxPayControllerAPI extends Controller
             ])->withBody(json_encode([
                 'grant_type' => 'authorization_code',
                 'scope' => $permissoesApi
-            ]), 'json')->post('https://api.galaxpay.com.br/v2/token');
+            ]), 'json')->post('https://api.sandbox.cloud.galaxpay.com.br/v2/token');
 
             // SALVANDO TOKEN NO BANCO DE DADOS 
             $galaxPayParametros->galax_token = $response['access_token'];
@@ -98,7 +112,7 @@ class galaxPayControllerAPI extends Controller
             $response = Http::withHeaders([
                 'Authorization' => "Bearer $accessToken",
                 'Content-Type' => 'application/json'
-            ])->get("https://api.galaxpay.com.br/v2/customers?startAt=$startAt&limit=100");
+            ])->get("https://api.sandbox.cloud.galaxpay.com.br/v2/customers?startAt=$startAt&limit=100");
 
             // CAPTURANDO RESPOSTA DA API
             $response = json_decode($response);
@@ -264,8 +278,9 @@ class galaxPayControllerAPI extends Controller
             $estado                         = $responseApi->Customers[0]->Address->state;
             $cadastraEnderecoCliente        = true;
             $campoExtras                    = $responseApi->Customers[0]->ExtraFields;
-            // GERANDO NUMERO DE MATRICULA
-            $matricula = str_pad(date('Y') . $codigoClienteGalaxpay, 10, 0);
+
+            // GERANDO NUMERO DE MATRICULA (ANO ATUAL + CODIGO DO CLIENTE NA GALAXPAY + 3 ULTIMOS NUMERO DO CPF)
+            $matricula = date('Y') . $codigoClienteGalaxpay . substr($cpfCnpjCliente, -3);
 
             // ANALISANDO TIPO DE USUARIO LOGADO
             $permissaoUserLogado = $request->user()->role;
@@ -326,8 +341,46 @@ class galaxPayControllerAPI extends Controller
             };
             // VERIFICANDO CAMPOS EXTRAS
             if (!empty($campoExtras)) {
+
+                // ANALISANDO CAMPOS PERSONALIZADOS DEPNDENTES
+                $qtdeDependentesLimite = 7;
+
+                for ($i = 0; $i < $qtdeDependentesLimite; $i++) {
+                    // INCREMENTANDO VARIAVEL PARA PESQUISA
+                    $nomeCampoPersonalizadoDependentes = 'CP_NOME_DEPENDENTE_0' . (1 + $i);
+                    $cpfCampoPersonalizadoDependentes = 'CP_CPF_DEPENDENTE_0' . (1 + $i);
+                    $nascimentoCampoPersonalizadoDependentes = 'CP_NASCIMENTO_DEPENDENTE_0' . (1 + $i);
+
+                    // ANALISANDO SE O CAMPO DE DEPENDENTE QUE ESTA SENDO PERCORRIDO EXISTE NO ARRAY DE CAMPOS EXTRAS API
+                    if (in_array($nomeCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'))) {
+                        // INICIALIZANDO VARIAVEIS
+                        $indexNomeDependente = array_search($nomeCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'));
+                        $indexCpfDependente = array_search($cpfCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'));
+                        $indexNascimentoDependente = array_search($nascimentoCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'));
+
+                        // ANALISANDO SE OS CAMPOS NÃO ESTÃO VAZIO, SENDO ASISM RETORNAR ERRO
+                        if (empty($indexNomeDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $nomeCampoPersonalizadoDependentes . ']']]);
+                        if (empty($indexCpfDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $cpfCampoPersonalizadoDependentes . ']']]);
+                        if (empty($indexNascimentoDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $nascimentoCampoPersonalizadoDependentes . ']']]);
+
+                        // GERANDO NUMERO DE MATRICULA (ANO ATUAL + CODIGO DO CLIENTE NA GALAXPAY + 3 ULTIMOS NUMERO DO CPF)
+                        $matriculaDependente = date('Y') . $codigoClienteGalaxpay . substr($campoExtras[$indexCpfDependente]->tagValue, -3);
+
+                        // CRIANDO MODEL
+                        $clientesDependentesGalaxpay = new clientes_dependentes_galaxpay();
+                        // ATRIBUINDO VALORES
+                        $clientesDependentesGalaxpay->nome_cliente_dependente = $campoExtras[$indexNomeDependente]->tagValue;
+                        $clientesDependentesGalaxpay->cpf_cliente_dependente = $campoExtras[$indexCpfDependente]->tagValue;
+                        $clientesDependentesGalaxpay->nascimento_cliente_dependente = $campoExtras[$indexNascimentoDependente]->tagValue;
+                        $clientesDependentesGalaxpay->matricula_cliente_dependente = $matriculaDependente;
+                        // SALVANDO NO BANCO
+                        $clienteGalaxpay->clientesDependentesGalaxpay()->save($clientesDependentesGalaxpay);
+                    };
+                }
+
                 // PERCORRENDO LAÇO
                 foreach ($campoExtras as $campoExtras) {
+
                     // CRIANDO MODEL PARA INSERT
                     $campoPersonalizadoClienteGalaxpay[]  = new campo_personalizado_cliente_galaxpay([
                         'nome_campo_personalizado' => $campoExtras->tagName,
@@ -356,16 +409,16 @@ class galaxPayControllerAPI extends Controller
         };
 
         // CAPTURANDO ACCESS TOKEN
-        $generateAcessToken = $this->generateAcessToken($request);
+        $generateAcessToken = galaxPayControllerAPI::generateAcessToken($request);
         // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
         if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
             // REDIRECIONANDO COM ERRO
             return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);
         }
-
         // INICIALIZANDO VARIAVEL
-        $accessToken = $generateAcessToken['access_token'];
-        $galaxPayId  = $clienteGalaxpay->codigo_cliente_galaxpay;
+        $accessToken                = $generateAcessToken['access_token'];
+        $galaxPayId                 = $clienteGalaxpay->codigo_cliente_galaxpay;
+        $cadastraEnderecoCliente    = true;
 
         // DELETANDO CAMPOS PERSONALIZADOS
         campo_personalizado_cliente_galaxpay::where('cliente_galaxpay_id', $clienteGalaxpay->id)->delete();
@@ -374,7 +427,7 @@ class galaxPayControllerAPI extends Controller
         $response = Http::withHeaders([
             'Authorization' => "Bearer $accessToken",
             'Content-Type' => 'application/json'
-        ])->get("https://api.galaxpay.com.br/v2/customers?galaxPayIds=$galaxPayId&startAt=0&limit=1");
+        ])->get("https://api.sandbox.cloud.galaxpay.com.br/v2/customers?galaxPayIds=$galaxPayId&startAt=0&limit=1");
 
         // CAPTURANDO RESPOSTA DA API
         $response = json_decode($response);
@@ -387,6 +440,17 @@ class galaxPayControllerAPI extends Controller
 
         // GERANDO NUMERO DE MATRICULA
         $matricula = str_pad(date('Y') . $response->Customers[0]->galaxPayId, 10, 0);
+
+        // PERCORRENDO LAÇO DE ENDEREÇOS
+        foreach ($response->Customers[0]->Address as $keyAddress => $valueAddress) {
+            // ANALISANDO SE O CAMPO COMPLEMENT É VAZIO
+            if ($keyAddress == 'complement' && empty($valueAddress)) continue;
+
+            // ANALISANDO SE EXISTE ALGUM CAMPO VAZIO NO ENDEREÇO
+            if (empty($valueAddress)) {
+                $cadastraEnderecoCliente = false;
+            };
+        }
 
         // ATUALIZANDO VALORES AO MODEL
         $clienteGalaxpay->codigo_cliente_galaxpay          = $response->Customers[0]->galaxPayId;
@@ -403,23 +467,77 @@ class galaxPayControllerAPI extends Controller
         $clienteGalaxpay->status_cliente                   = $response->Customers[0]->status;
         $clienteGalaxpay->createdAt                        = $response->Customers[0]->createdAt;
         $clienteGalaxpay->updatedAt                        = $response->Customers[0]->updatedAt;
-        // ATUALIZANDO ENDEREÇO DO CLIENTE
-        $clienteGalaxpay->enderecoClienteGalaxpay->cep               = $response->Customers[0]->Address->zipCode;
-        $clienteGalaxpay->enderecoClienteGalaxpay->logradouro        = $response->Customers[0]->Address->street;
-        $clienteGalaxpay->enderecoClienteGalaxpay->numero            = $response->Customers[0]->Address->number;
-        $clienteGalaxpay->enderecoClienteGalaxpay->complemento       = $response->Customers[0]->Address->complement;
-        $clienteGalaxpay->enderecoClienteGalaxpay->bairro            = $response->Customers[0]->Address->neighborhood;
-        $clienteGalaxpay->enderecoClienteGalaxpay->cidade            = $response->Customers[0]->Address->city;
-        $clienteGalaxpay->enderecoClienteGalaxpay->estado            = $response->Customers[0]->Address->state;
+        // SALVANDO NO BANCO DE DADOS
+        $clienteGalaxpay->save();
+
+        // ANALISANDO ENDEREÇÕ DO CLIENTE
+        if ($cadastraEnderecoCliente) {
+            // ATUALIZANDO ENDEREÇO DO CLIENTE
+            $clienteGalaxpay->enderecoClienteGalaxpay->cep               = $response->Customers[0]->Address->zipCode;
+            $clienteGalaxpay->enderecoClienteGalaxpay->logradouro        = $response->Customers[0]->Address->street;
+            $clienteGalaxpay->enderecoClienteGalaxpay->numero            = $response->Customers[0]->Address->number;
+            $clienteGalaxpay->enderecoClienteGalaxpay->complemento       = $response->Customers[0]->Address->complement;
+            $clienteGalaxpay->enderecoClienteGalaxpay->bairro            = $response->Customers[0]->Address->neighborhood;
+            $clienteGalaxpay->enderecoClienteGalaxpay->cidade            = $response->Customers[0]->Address->city;
+            $clienteGalaxpay->enderecoClienteGalaxpay->estado            = $response->Customers[0]->Address->state;
+            // SALVANDO NO BANCO DE DADOS
+            $clienteGalaxpay->enderecoClienteGalaxpay->save();
+        }
 
         // CAPTURANDO CAMPOS EXTRAS
         $campoExtras = $response->Customers[0]->ExtraFields;
 
-        $clienteGalaxpay->save();
-        $clienteGalaxpay->enderecoClienteGalaxpay->save();
-
         // VERIFICANDO CAMPOS EXTRAS
         if (!empty($campoExtras)) {
+
+            // ANALISANDO CAMPOS PERSONALIZADOS DEPNDENTES
+            $qtdeDependentesLimite = 7;
+
+            for ($i = 0; $i < $qtdeDependentesLimite; $i++) {
+                // INCREMENTANDO VARIAVEL PARA PESQUISA
+                $nomeCampoPersonalizadoDependentes = 'CP_NOME_DEPENDENTE_0' . (1 + $i);
+                $cpfCampoPersonalizadoDependentes = 'CP_CPF_DEPENDENTE_0' . (1 + $i);
+                $nascimentoCampoPersonalizadoDependentes = 'CP_NASCIMENTO_DEPENDENTE_0' . (1 + $i);
+
+                // ANALISANDO SE O CAMPO DE DEPENDENTE QUE ESTA SENDO PERCORRIDO EXISTE NO ARRAY DE CAMPOS EXTRAS API
+                if (in_array($nomeCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'))) {
+                    // INICIALIZANDO VARIAVEIS
+                    $indexNomeDependente = array_search($nomeCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'));
+                    $indexCpfDependente = array_search($cpfCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'));
+                    $indexNascimentoDependente = array_search($nascimentoCampoPersonalizadoDependentes, array_column($campoExtras, 'tagName'));
+
+                    // ANALISANDO SE OS CAMPOS NÃO ESTÃO VAZIO, SENDO ASISM RETORNAR ERRO
+                    if (empty($indexNomeDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $nomeCampoPersonalizadoDependentes . ']']]);
+                    if (empty($indexCpfDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $cpfCampoPersonalizadoDependentes . ']']]);
+                    if (empty($indexNascimentoDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $nascimentoCampoPersonalizadoDependentes . ']']]);
+
+                    // CAPTURANDO DEPENDENTE PELO CPF
+                    $clientesDependentesGalaxpayCadastrado = clientes_dependentes_galaxpay::where('cpf_cliente_dependente', $campoExtras[$indexCpfDependente]->tagValue)->first();
+
+                    // VERIFICANDO SE FOI ENCONTRADO DEPENDENTE PELO CPF
+                    if ($clientesDependentesGalaxpayCadastrado) {
+                        // ATRIBUINDO VALORES
+                        $clientesDependentesGalaxpayCadastrado->nome_cliente_dependente = $campoExtras[$indexNomeDependente]->tagValue;
+                        $clientesDependentesGalaxpayCadastrado->cpf_cliente_dependente = $campoExtras[$indexCpfDependente]->tagValue;
+                        $clientesDependentesGalaxpayCadastrado->nascimento_cliente_dependente = $campoExtras[$indexNascimentoDependente]->tagValue;
+                        // SALVANDO NO BANCO
+                        $clientesDependentesGalaxpayCadastrado->save();
+                    } else {
+                        // CRIANDO MODEL
+                        $clientesDependentesGalaxpay = new clientes_dependentes_galaxpay();
+
+                        // GERANDO NUMERO DE MATRICULA (ANO ATUAL + CODIGO DO CLIENTE NA GALAXPAY + 3 ULTIMOS NUMERO DO CPF)
+                        $matriculaDependente = date('Y') . $clienteGalaxpay->codigo_cliente_galaxpay . substr($campoExtras[$indexCpfDependente]->tagValue, -3);
+                        // ATRIBUINDO VALORES
+                        $clientesDependentesGalaxpay->nome_cliente_dependente = $campoExtras[$indexNomeDependente]->tagValue;
+                        $clientesDependentesGalaxpay->cpf_cliente_dependente = $campoExtras[$indexCpfDependente]->tagValue;
+                        $clientesDependentesGalaxpay->nascimento_cliente_dependente = $campoExtras[$indexNascimentoDependente]->tagValue;
+                        $clientesDependentesGalaxpay->matricula_cliente_dependente = $matriculaDependente;
+                        // SALVANDO NO BANCO
+                        $clienteGalaxpay->clientesDependentesGalaxpay()->save($clientesDependentesGalaxpay);
+                    }
+                };
+            }
 
             // PERCORRENDO LAÇO
             foreach ($campoExtras as $campoExtras) {
@@ -435,6 +553,8 @@ class galaxPayControllerAPI extends Controller
             // ZERANDO VARIAVEL
             unset($campoPersonalizadoClienteGalaxpay);
         }
+
+        return "SUCCESS";
     }
 
     public function pesquisaClienteGalaxPay(Request $request)
@@ -475,14 +595,13 @@ class galaxPayControllerAPI extends Controller
                 break;
         }
 
-
         // ANALISANDOS E O CLIENTE JÁ ESTA CADASTRADO NA BASE
         if (empty($clienteCadastrado)) {
             // MONTANDO CORPO PARA ENVIO DA API
             $response = Http::withHeaders([
                 'Authorization' => "Bearer $accessToken",
                 'Content-Type' => 'application/json'
-            ])->get("https://api.galaxpay.com.br/v2/customers?$searchOption=$search&startAt=0&limit=1");
+            ])->get("https://api.sandbox.cloud.galaxpay.com.br/v2/customers?$searchOption=$search&startAt=0&limit=1");
 
             // CAPTURANDO RESPOSTA DA API
             $response = json_decode($response);
@@ -507,34 +626,81 @@ class galaxPayControllerAPI extends Controller
             $retorno = $clienteCadastrado;
         }
 
-        // DEFININDO QUANTIDADE DE DEPENDENTE EXISTEM
-        $qtdDependentes = 7;
-        $dependentesCliente = [];
-        for ($i = 1; $i <= $qtdDependentes; $i++) {
-            // INICIALIZANDO VARIAVEIS COM OS CAMPOS EXTRAS DE DEPENDENTES
-            $nomeDependente = $retorno->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_NOME_DEPENDENTE_0' . $i)->first();
-            $cpfDependente = $retorno->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_CPF_DEPENDENTES_0' . $i)->first();
-            $nascimentoDependente = $retorno->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_NASCIMENTO_DEPENDENTE_0' . $i)->first();
-
-            // ANISALISANDO SE EXISTE NOME DE DEPENDENTE
-            if (isset($nomeDependente)) {
-                // ADICIONANDO AO ARRAY
-                $dependentesCliente[] = [
-                    'nomeDependente' => $nomeDependente,
-                    'cpfDependente' => $cpfDependente,
-                    'nascimentoDependente' => $nascimentoDependente
-                ];
-            }
-
-            // RESETANDO VARIAVEL
-            unset($nomeDependente);
-        }
-
         // RETORNANDO VIEW
         if ($request->user()->role == 'empresaParceira') {
-            return view('clientes.infoClienteStatus', ['clienteGalaxpay' => $retorno, 'dependentesCliente' => $dependentesCliente]);
+            return view('clientes.infoClienteStatus', ['clienteGalaxpay' => $retorno]);
         } else {
-            return view('components.listas.listClientes', ['clienteGalaxpay' => $retorno, 'dependentesCliente' => $dependentesCliente]);
+            return view('components.listas.listGalaxPayClientes', ['clienteGalaxpay' => $retorno]);
+        }
+    }
+
+    public function editarClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
+    {
+        // INICIALIZANDO VARIÁVEIS
+        $enderecoClienteGalaxpay = array();
+        $data = array();
+        if (!empty($clienteGalaxPay->email_cliente_2)) {
+            $emails = [
+                $clienteGalaxPay->email_cliente_1,
+                $clienteGalaxPay->email_cliente_2
+            ];
+        } else {
+            $emails = [
+                $clienteGalaxPay->email_cliente_1,
+                $clienteGalaxPay->email_cliente_2
+            ];
+        };
+
+        if (!empty($clienteGalaxPay->enderecoClienteGalaxpay)) {
+            // MONTANDO ARRAY DE ENDERECO
+            $enderecoClienteGalaxpay = [
+                'zipCode' => $clienteGalaxPay->enderecoClienteGalaxpay->cep,
+                'street' => $clienteGalaxPay->enderecoClienteGalaxpay->logradouro,
+                'number' => $clienteGalaxPay->enderecoClienteGalaxpay->numero,
+                'complement' => $clienteGalaxPay->enderecoClienteGalaxpay->complemento,
+                'neighborhood' => $clienteGalaxPay->enderecoClienteGalaxpay->bairro,
+                'city' => $clienteGalaxPay->enderecoClienteGalaxpay->cidade,
+                'state' => $clienteGalaxPay->enderecoClienteGalaxpay->estado
+            ];
+        }
+
+        // MONTANDO ARRAY DE DATA
+        $data = [
+            'myId' => $clienteGalaxPay->meu_id,
+            'name' => $clienteGalaxPay->nome_cliente,
+            'document' => $clienteGalaxPay->cpf_cnpj_cliente,
+            'emails' => $emails,
+            'phones' => [
+                $clienteGalaxPay->telefone_cliente_1,
+                $clienteGalaxPay->telefone_cliente_2
+            ],
+            'Address' => $enderecoClienteGalaxpay,
+            // 'ExtraFields' => []
+        ];
+        // CAPTURANDO ACCESS TOKEN
+        $generateAcessToken = $this->generateAcessToken($request);
+        // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
+        if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
+            // REDIRECIONANDO COM ERRO
+            return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);
+        }
+        // INICIALIZANDO VARIAVEIS 
+        $accessToken                = $generateAcessToken['access_token'];
+
+
+        // MONTANDO CORPO PARA ENVIO DA API
+        $response = Http::withHeaders([
+            'Authorization' => "Bearer $accessToken",
+            'Content-Type' => 'application/json'
+        ])->put("https://api.sandbox.cloud.galaxpay.com.br/v2/customers/" . $clienteGalaxPay->codigo_cliente_galaxpay . "/galaxPayId", $data);
+
+        // CAPTURANDO RESPOSTA DA API
+        $response = json_decode($response);
+        if (!empty($response->error)) {
+            // REDIRECIONANDO COM ERRO
+            return redirect()->route('clientes.informacoesCliente', $clienteGalaxPay->id)->withErrors($response->error->message . " [ " .  json_encode($response) . " ]");
+        } else {
+            return redirect()->route('clientes.informacoesCliente', $clienteGalaxPay->id)->with('SUCCESS', ['Alterações realizadas com sucesso.']);
         }
     }
 }
