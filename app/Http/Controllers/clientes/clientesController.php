@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\clientes;
 
+use App\Http\Controllers\api\galaxPayControllerAPI;
 use App\Http\Controllers\Controller;
 use App\Models\campo_personalizado_cliente_galaxpay;
 use App\Models\clientes_dependentes_galaxpay;
 use App\Models\clientes_galaxpay;
 use App\Models\historico_atendimento_cliente;
 use App\Models\logs_alteracao;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Nette\Utils\Json;
@@ -22,12 +24,26 @@ class clientesController extends Controller
      */
     public function __invoke(Request $request)
     {
-        return view('clientes.clientes', ['galaxPayClientes' => $request->user()->galaxPayClientes]);
+        switch ($request->user()->role) {
+            case 'empresaParceira':
+                $userLinkedId = $request->user()->userPrimario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                return view('clientes.clientes', ['galaxPayClientes' => $userPrimario->galaxPayClientes]);
+                break;
+            case 'Funcionario':
+                $userLinkedId = $request->user()->userPrimarioFuncionario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                return view('clientes.clientes', ['galaxPayClientes' => $userPrimario->galaxPayClientes]);
+                break;
+            default:
+                return view('clientes.clientes', ['galaxPayClientes' => $request->user()->galaxPayClientes]);
+                break;
+        }
     }
 
-    public function informacoesClienteGalaxPay(Request $request)
+    public function informacoesClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
     {
-        return view('clientes.informacoesCliente', ['galaxPayCliente' => $request->user()->galaxPayClientes->find($request->idClienteGalaxPay)]);
+        return view('clientes.informacoesCliente', ['galaxPayCliente' => $clienteGalaxPay]);
     }
 
     public function editClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
@@ -67,8 +83,17 @@ class clientesController extends Controller
             $clienteGalaxPay->enderecoClienteGalaxpay->estado       = $request->estadoClienteGalaxPay;
         }
 
-        // SALVANDO JSON
+        // SALVANDO NOVOS DADOS
+        $clienteGalaxPay->save();
+        if (!empty($clienteGalaxPay->enderecoClienteGalaxpay)) $clienteGalaxPay->enderecoClienteGalaxpay->save();
+
+        // SALVANDO JSON PARA LOG
         $jsonAlteracao = json_encode($clienteGalaxPay);
+
+        $retorno = galaxPayControllerAPI::editarClienteGalaxPay($request, $clienteGalaxPay);
+        if ($retorno['statusRetorno'] != 'SUCCESS') {
+            return redirect()->back()->withInput()->withErrors(["Erro ao atualizar cliente na Galaxpay. \n" . $retorno['msgRetorno']]);
+        }
 
         // ATRIBUINDO VALORES DE HISTORICO DE ALTERAÇÕES
         $historicoAlteracaoCliente = new historico_atendimento_cliente;
@@ -86,13 +111,11 @@ class clientesController extends Controller
         $logsAlteracao->json_alteracao = $jsonAlteracao;
 
         // SALVANDO NOVOS DADOS
-        $clienteGalaxPay->save();
-        if (!empty($clienteGalaxPay->enderecoClienteGalaxpay)) $clienteGalaxPay->enderecoClienteGalaxpay->save();
         $logsAlteracao->save();
         $historicoAlteracaoCliente->save();
 
-        return redirect()->route('galaxPay.clientes', $clienteGalaxPay);
-        // return redirect()->back()->withInput()->with('SUCCESS', ['Alterações realizadas com sucesso.']);
+        // return redirect()->route('galaxPay.clientes', $clienteGalaxPay);
+        return redirect()->back()->withInput()->with('SUCCESS', ['Alterações realizadas com sucesso.']);
     }
 
     public function pesquisaCliente(Request $request)

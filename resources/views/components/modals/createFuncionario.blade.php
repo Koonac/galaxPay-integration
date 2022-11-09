@@ -15,13 +15,17 @@
                         </div>
                     </div>
                     <div class="row py-2">
-                        <div class="col-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold" for="nomeFuncionario">Nome funcionário</label>
                             <input class="form-control" type="text" name="nomeFuncionario" id="nomeFuncionario" placeholder="">                  
                         </div>
-                        <div class="col-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold" for="cpfFuncionario">CPF funcionário</label>
-                            <input class="form-control " type="text" name="cpfFuncionario" id="cpfFuncionario" placeholder="" required>                  
+                            <input class="form-control cpfMask" type="text" name="cpfFuncionario" id="cpfFuncionario" placeholder="" required>                  
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold" for="telefone1Funcionario">Telefone 1</label>
+                            <input class="form-control cpfMask" type="text" name="telefone1Funcionario" id="telefone1Funcionario" placeholder="">                  
                         </div>
                     </div>
                     <div class="row py-2">
@@ -38,6 +42,7 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" form="formModalCreateFuncionario" class="btn btn-info text-white fw-bold">Cadastrar</button>
             </div>
         </div>

@@ -1,6 +1,6 @@
 <x-layout.layoutNavBar>
     <div class="container-fluid bg-light shadow border rounded p-4">
-        <form action="{{route('editUser', $user->id)}}" method="POST">
+        <form action="{{route('editUser', $user)}}" method="POST">
             @method('PUT')
             @csrf
             <div class="row ">
@@ -10,23 +10,31 @@
             </div>
             <hr>
             <div class="row py-2">
-                <div class="col-md-6">
-                    <label class="fw-bold" for="empresaPerfil">Empresa</label>
-                    <input class="form-control" name="empresaPerfil" id="empresaPerfil" type="text" readonly>
+                <div class="col-md-4">
+                    <label class="fw-bold" for="razaoSocial">Razão social</label>
+                    <input class="form-control" name="razaoSocial" id="razaoSocial" type="text" value="{{$user->razao_social}}">
                 </div>
-                <div class="col-md-6">
-                    <label class="fw-bold" for="cnpjPerfil">CNPJ</label>
-                    <input class="form-control" name="cnpjPerfil" id="cnpjPerfil" type="text" readonly>
+                <div class="col-md-4">
+                    <label class="fw-bold" for="nomeFantasia">Nome fantasia</label>
+                    <input class="form-control" name="nomeFantasia" id="nomeFantasia" type="text" value="{{$user->nome_fantasia}}">
+                </div>
+                <div class="col-md-4">
+                    <label class="fw-bold" for="cpfCnpj">CPF/CNPJ</label>
+                    <input class="form-control cnpjMask" name="cpfCnpj" id="cpfCnpj" type="text" value="{{$user->cpf_cnpj}}">
                 </div>
             </div>
             <div class="row py-2">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="fw-bold" for="nomePerfil">Nome</label>
                     <input class="form-control" name="nomePerfil" id="nomePerfil" type="text" value="{{$user->name}}">
                 </div>
-                <div class="col-md-6">
-                    <label class="fw-bold" for="cpfPerfil">CPF</label>
-                    <input class="form-control cnpjMask" name="cpfPerfil" id="cpfPerfil" type="text">
+                <div class="col-md-4">
+                    <label class="fw-bold" for="telefone1">Telefone 1</label>
+                    <input class="form-control telefoneMask2" name="telefone1" id="telefone1" type="text" value="{{$user->telefone_1}}">
+                </div>
+                <div class="col-md-4">
+                    <label class="fw-bold" for="telefone2">Telefone 2</label>
+                    <input class="form-control telefoneMask2" name="telefone2" id="telefone2" type="text" value="{{$user->telefone_2}}">
                 </div>
             </div>
             <div class="row py-2">

@@ -19,10 +19,10 @@ class CreateCaixaFinanceiroTable extends Migration
             $table->unsignedBigInteger('id_user_abertura');
             $table->string('nome_user_abertura');
             $table->string('valor_abertura')->nullable();
+            $table->string('valor_fechamento')->nullable();
             $table->dateTime('data_abertura');
             $table->unsignedBigInteger('id_user_fechamento')->nullable();
             $table->string('nome_user_fechamento')->nullable();
-            $table->string('valor_fechamento')->nullable();
             $table->dateTime('data_fechamento')->nullable();
             $table->timestamps();
 

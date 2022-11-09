@@ -10,13 +10,13 @@
                 <table id="empresasParceirasTable" class="table table-striped">
                     <thead>
                         <tr class="fw-bold">
-                            <td>#</td>
-                            <td>Razão Social</td>
-                            <td>Nome Fantasia</td>
-                            <td>CPF/CNPJ</td>
-                            <td>Telefone</td>
-                            <td>Criado</td>
-                            <td width='80px'></td>
+                            <td width='5%'>#</td>
+                            <td width='30%'>Razão Social</td>
+                            <td width='25%'>Nome Fantasia</td>
+                            <td width='10%'>CPF/CNPJ</td>
+                            <td width='10%'>Telefone</td>
+                            <td width='10%'>Criado</td>
+                            <td width='10%'></td>
                         </tr>
                     </thead>
                     <tbody>

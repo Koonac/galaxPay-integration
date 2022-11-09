@@ -15,16 +15,16 @@
                     <span>
                         @switch($galaxPayCliente->status_cliente)
                         @case('active')
-                            <p class="bg-success px-2 m-0 text-white fw-bold rounded" style="width: min-content">Ativo</p>
+                            <p class="bg-success px-2 py-2 m-0 text-white text-center fw-bold rounded" style="width: min-content">Ativo</p>
                             @break
                         @case('delayed')
-                            <p class="bg-warning px-2 m-0 text-white fw-bold rounded" style="width: 160px">Pagamento Pendente</p>
+                            <p class="bg-warning px-2 py-2 m-0 text-white fw-bold text-center rounded" style="width: 190px">Pagamento Pendente</p>
                             @break
                         @case('inactive')
-                            <p class="bg-danger px-2 m-0 text-white fw-bold rounded" style="width: min-content">Inativo</p>
+                            <p class="bg-danger px-2 py-2 m-0 text-white fw-bold text-center rounded" style="width: min-content">Inativo</p>
                             @break
                         @case('withoutSubscriptionOrCharge')
-                            <p class="bg-secondary px-2 m-0 text-white fw-bold rounded" style="width: 130px">Sem assinatura</p>
+                            <p class="bg-secondary px-2 py-2 m-0 text-white fw-bold text-center rounded" style="width: 140px">Sem assinatura</p>
                             @break
                         @default
                     @endswitch
@@ -70,29 +70,29 @@
                     <div class="row py-2">
                         <div class="col-md-5">
                             <label class="fw-bold" for="logradouroClienteGalaxPay">Logradouro</label>
-                            <input class="form-control" name="logradouroClienteGalaxPay" id="logradouroClienteGalaxPay" type="text" required>
+                            <input class="form-control" name="logradouroClienteGalaxPay" id="logradouroClienteGalaxPay" type="text">
                         </div>                    
                         <div class="col-md-2">
                             <label class="fw-bold" for="numeroClienteGalaxPay">Nº</label>
-                            <input class="form-control" name="numeroClienteGalaxPay" id="numeroClienteGalaxPay" type="text" required>
+                            <input class="form-control" name="numeroClienteGalaxPay" id="numeroClienteGalaxPay" type="text">
                         </div>                    
                         <div class="col-md-5">
                             <label class="fw-bold" for="bairroClienteGalaxPay">Bairro</label>
-                            <input class="form-control" name="bairroClienteGalaxPay" id="bairroClienteGalaxPay" type="text" required>
+                            <input class="form-control" name="bairroClienteGalaxPay" id="bairroClienteGalaxPay" type="text">
                         </div>                    
                     </div>
                     <div class="row py-2">
                         <div class="col-md-4">
                             <label class="fw-bold" for="cepClienteGalaxPay">CEP</label>
-                            <input class="form-control cepMask" name="cepClienteGalaxPay" id="cepClienteGalaxPay" type="text" required>
+                            <input class="form-control cepMask" name="cepClienteGalaxPay" id="cepClienteGalaxPay" type="text">
                         </div>
                         <div class="col-md-4">
                             <label class="fw-bold" for="cidadeClienteGalaxPay">Cidade</label>
-                            <input class="form-control" name="cidadeClienteGalaxPay" id="cidadeClienteGalaxPay" type="text" required>
+                            <input class="form-control" name="cidadeClienteGalaxPay" id="cidadeClienteGalaxPay" type="text">
                         </div>
                         <div class="col-md-4">
                             <label class="fw-bold" for="estadoClienteGalaxPay">Estado</label>
-                            <input class="form-control" name="estadoClienteGalaxPay" id="estadoClienteGalaxPay" type="text" required>
+                            <input class="form-control" name="estadoClienteGalaxPay" id="estadoClienteGalaxPay" type="text">
                         </div>
                         <div class="col-md-12">
                             <label class="fw-bold" for="complementoClienteGalaxPay">Complemento</label>
@@ -137,7 +137,7 @@
             <div class="row py-2">
                 <div class="col-md-12">
                     <label class="fw-bold" for="comentarioEdit">Comentário(Obrigatório):</label>
-                    <textarea class="form-control" name="comentarioEdit" id="comentarioEdit" rows="3" placeholder="Escreva o motivo da alteração..." required></textarea>
+                    <textarea class="form-control" name="comentarioEdit" id="comentarioEdit" rows="3" placeholder="Escreva o motivo da alteração..." value='{{old('comentarioEdit')}}' required></textarea>
                 </div>
             </div>
             @if (count($galaxPayCliente->clientesDependentesGalaxpay) > 0)

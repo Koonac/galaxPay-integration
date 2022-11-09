@@ -4,9 +4,12 @@ namespace App\Http\Controllers\financeiro;
 
 use App\Http\Controllers\Controller;
 use App\Models\caixa_financeiro;
+use App\Models\contas;
 use App\Models\despesas;
+use App\Models\logs_alteracao;
 use App\Models\recebimentos;
 use Illuminate\Http\Request;
+use Symfony\Component\VarDumper\VarDumper;
 
 class financeiroController extends Controller
 {
@@ -18,99 +21,71 @@ class financeiroController extends Controller
      */
     public function __invoke(Request $request)
     {
-        // ANALISANDO SE TEM CAIXA ABERTO
-        if (isset($request->idCaixaFinanceiro)) {
-            $caixaFinanceiro = caixa_financeiro::find($request->idCaixaFinanceiro);
-        } else {
-            $caixaFinanceiro = $request->user()->caixaFinanceiro->where('status_caixa', 'A')->first();
-        }
+        $contas = $request->user()->contasRecebimento;
 
         // RETORNANDO VIEW
-        return view('financeiro.financeiro', ['caixaFinanceiro' => $caixaFinanceiro]);
+        return view('financeiro.financeiro', ['contas' => $contas]);
     }
 
-    public function abrirCaixa(Request $request)
+    public function criarConta(Request $request)
     {
-        // INICIANDO OBJETO
-        $caixaFinanceiro = new caixa_financeiro;
+        // CRIANDO MODEL
+        $conta = new contas;
 
-        // TRATANDO VARIAVEIS
-        $valorCaixaAbertura = preg_replace('/[^0-9]/', '', $request->valorCaixaAbertura);
-        if (empty($valorCaixaAbertura)) $valorCaixaAbertura = 0;
-        $valorCaixaAbertura = number_format($valorCaixaAbertura, 2, '.', ',');
+        // INICILIZANDO VARIÁVEIS
+        $descricaoConta = trim($request->descricaoConta);
 
         // ATRIBUINDO VALORES
-        $caixaFinanceiro->status_caixa = 'A';
-        $caixaFinanceiro->id_user_abertura = $request->user()->id;
-        $caixaFinanceiro->nome_user_abertura = $request->user()->name;
-        $caixaFinanceiro->valor_abertura = $valorCaixaAbertura;
-        $caixaFinanceiro->data_abertura = date('Y-m-d H:i:s');
+        $conta->descricao_conta = $descricaoConta;
+        $conta->valor_conta = '0.00';
+        $conta->id_user = $request->user()->id;
 
-        // SALVANDO NO BANCO
-        $caixaFinanceiro->save();
+        // SALVANDO ALTREAÇÕES
+        $conta->save();
 
-        // REDIRECIONANDO PARA PAGINA
-        return redirect()->route('financeiro', ['idCaixaFinanceiro' => $caixaFinanceiro->id]);
+        return redirect()->back()->with(['SUCCESS' => ['Conta criada com sucesso.']]);
     }
 
-    public function fecharCaixa(Request $request, caixa_financeiro $caixaFinanceiro)
+    public function editarConta(Request $request, contas $conta)
     {
-        // TRATANDO VARIAVEIS
-        $valorFechamento = preg_replace('/[^0-9]/', '', $request->valorTotalCaixa);
-        if (empty($valorFechamento)) $valorFechamento = 0;
-        $valorFechamento = number_format($valorFechamento, 2, '.', ',');
+        // INICILIZANDO VARIÁVEIS
+        $descricaoConta = trim($request->descricaoConta);
+        $valorConta     = $request->valorConta;
+        $valorConta     = str_replace(',', '.', str_replace('.', '', $request->valorConta));
+        $valorConta     = number_format($valorConta, 2, '.', ',');
 
         // ATRIBUINDO VALORES
-        $caixaFinanceiro->status_caixa = 'F';
-        $caixaFinanceiro->id_user_fechamento = $request->user()->id;
-        $caixaFinanceiro->nome_user_fechamento = $request->user()->name;
-        $caixaFinanceiro->valor_fechamento = $valorFechamento;
-        $caixaFinanceiro->data_fechamento = date('Y-m-d H:i:s');
+        $conta->descricao_conta = $descricaoConta;
+        $conta->valor_conta = $valorConta;
 
-        // SALVANDO NO BANCO
-        $caixaFinanceiro->save();
+        // CRIANDO JSON
+        $jsonAlteracao = json_encode($conta);
 
-        // REDIRECIONANDO PARA PAGINA
-        return redirect()->route('financeiro');
+        // SALVANDO ALTREAÇÕES
+        $conta->save();
+
+        // ATRIBUINDO VALORES DE LOGS
+        $logsAlteracao = new logs_alteracao();
+        $logsAlteracao->user_id = $request->user()->id;
+        $logsAlteracao->nome_user = $request->user()->name;
+        $logsAlteracao->comentario_alteracao = $request->comentarioEdit;
+        $logsAlteracao->detalhe_alteracao = 'UPDATE CONTA SISTEMA';
+        $logsAlteracao->json_alteracao = $jsonAlteracao;
+
+        // SALVANDO ALTREAÇÕES
+        $logsAlteracao->save();
+
+        return redirect()->back()->with(['SUCCESS' => ['Conta alterada com sucesso.']]);
     }
 
-    public function adicionarRecebimento(Request $request, caixa_financeiro $caixaFinanceiro)
+    public function excluirConta(Request $request, contas $conta)
     {
-        // TRATANDO VARIAVEIS
-        $valorRecebimento = str_replace('.', '', $request->valorRecebimento);
-        $valorRecebimento = preg_replace('/,/', '.', $valorRecebimento);
-        if (empty($valorRecebimento)) $valorRecebimento = 0;
-        $valorRecebimento = number_format($valorRecebimento, 2, '.', ',');
-        $observacaoRecebimento = trim($request->observacaoRecebimento);
+        // ATRIBUINDO VALORES
+        $conta->deleted = 'S';
 
-        // INICIALIZANDO MODEL
-        $recebimentos = new recebimentos;
-        // ATRIBUINDO VALORES DE VARIAVEIS
-        $recebimentos->valor_recebimento        = $valorRecebimento;
-        $recebimentos->observacao_recebimento   = $observacaoRecebimento;
-        $recebimentos->data_recebimento         = date('Y-m-d H:i:s');
-        $caixaFinanceiro->recebimentos()->save($recebimentos);
+        // SALVANDO ALTREAÇÕES
+        $conta->save();
 
-        return redirect()->back()->with(['SUCCESS' => ['Recebimento adicionado com sucesso ao caixa']]);
-    }
-
-    public function adicionarDespesa(Request $request, caixa_financeiro $caixaFinanceiro)
-    {
-        // TRATANDO VARIAVEIS
-        $valorDespesa = str_replace('.', '', $request->valorDespesa);
-        $valorDespesa = preg_replace('/,/', '.', $valorDespesa);
-        if (empty($valorDespesa)) $valorDespesa = 0;
-        $valorDespesa = number_format($valorDespesa, 2, '.', ',');
-        $observacaoDespesa = trim($request->observacaoDespesa);
-
-        // INICIALIZANDO MODEL
-        $despesas = new despesas;
-        // ATRIBUINDO VALORES DE VARIAVEIS
-        $despesas->valor_despesa        = $valorDespesa;
-        $despesas->observacao_despesa   = $observacaoDespesa;
-        $despesas->data_despesa         = date('Y-m-d H:i:s');
-        $caixaFinanceiro->despesas()->save($despesas);
-
-        return redirect()->back()->with(['SUCCESS' => ['Despesa adicionada com sucesso ao caixa']]);
+        return redirect()->back()->with(['SUCCESS' => ['Conta excluida com sucesso.']]);
     }
 }

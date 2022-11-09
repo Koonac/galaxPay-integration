@@ -52,12 +52,16 @@ class funcionariosController extends Controller
             $emailLogin = strtoupper($request->emailLogin);
             $nomeFuncionario = $request->nomeFuncionario;
             $cpfFuncionario = $request->cpfFuncionario;
+            $telefone1Funcionario = $request->telefone1Funcionario;
+            $telefone2Funcionario = $request->telefone2Funcionario;
             $userLogin = $request->userLogin;
             $userPass = $request->userPass;
 
             // DEFININDO VALORES PARA CADASTRO
             $funcionarioUser->name = $nomeFuncionario;
             $funcionarioUser->cpf_cnpj = $cpfFuncionario;
+            $funcionarioUser->telefone_1 = $telefone1Funcionario;
+            $funcionarioUser->telefone_1 = $telefone2Funcionario;
             $funcionarioUser->login = $userLogin;
             $funcionarioUser->email = $emailLogin;
             $funcionarioUser->password = Hash::make($userPass);
@@ -75,6 +79,57 @@ class funcionariosController extends Controller
 
             // REDIRECIONANDO A PAGINA
             return redirect()->route('funcionarios')->with('SUCCESS', ['Funcionário cadastrado com sucesso. [Login: ' . $userLogin . ' Senha: ' . $userPass . ']']);
+        } catch (Exception $e) {
+            // REDIRECIONANDO A PAGINA
+            return redirect()->back()->withInput()->withErrors([$e->getMessage()]);
+        }
+    }
+
+    public function editFuncionario(Request $request, User $funcionario)
+    {
+        try {
+            // TRATANDO VARIÁVEIS
+            $cpfCnpjFuncionario     = trim($request->cpfCnpj);
+            $cpfCnpjFuncionario     = str_replace(".", "", $cpfCnpjFuncionario);
+            $cpfCnpjFuncionario     = str_replace(",", "", $cpfCnpjFuncionario);
+            $cpfCnpjFuncionario     = str_replace("-", "", $cpfCnpjFuncionario);
+            $cpfCnpjFuncionario     = str_replace("/", "", $cpfCnpjFuncionario);
+            $telefoneFuncionario1   = trim($request->telefone1Funcionario);
+            $telefoneFuncionario1   = str_replace(" ", "", $telefoneFuncionario1);
+            $telefoneFuncionario1   = str_replace("-", "", $telefoneFuncionario1);
+            $telefoneFuncionario1   = str_replace("(", "", $telefoneFuncionario1);
+            $telefoneFuncionario1   = str_replace(")", "", $telefoneFuncionario1);
+            $telefoneFuncionario2   = trim($request->telefone2Funcionario);
+            $telefoneFuncionario2   = str_replace(" ", "", $telefoneFuncionario2);
+            $telefoneFuncionario2   = str_replace("-", "", $telefoneFuncionario2);
+            $telefoneFuncionario2   = str_replace("(", "", $telefoneFuncionario2);
+            $telefoneFuncionario2   = str_replace(")", "", $telefoneFuncionario2);
+            $emailLogin             = $request->emailLogin;
+            $nomeFuncionario        = $request->nomeFuncionario;
+            $userLogin              = $request->userLogin;
+            empty($request->permitirClientes) ? $acessoClientes = 'N' : $acessoClientes = 'S';
+            empty($request->permitirFinanceiro) ? $acessoFinanceiro = 'N' : $acessoFinanceiro = 'S';
+            empty($request->permitirEmpresas) ? $acessoEmpresas = 'N' : $acessoEmpresas = 'S';
+            empty($request->permitirGalaxPay) ? $acessoGalaxpay = 'N' : $acessoGalaxpay = 'S';
+
+            // DEFININDO VALORES PARA ALTERAÇÃO
+            $funcionario->name          = $nomeFuncionario;
+            $funcionario->cpf_cnpj      = $cpfCnpjFuncionario;
+            $funcionario->login         = $userLogin;
+            $funcionario->email         = $emailLogin;
+            $funcionario->telefone_1    = $telefoneFuncionario1;
+            $funcionario->telefone_2    = $telefoneFuncionario2;
+            $funcionario->funcionarioPermissoes->acesso_clientes = $acessoClientes;
+            $funcionario->funcionarioPermissoes->acesso_financeiro = $acessoFinanceiro;
+            $funcionario->funcionarioPermissoes->acesso_empresas = $acessoEmpresas;
+            $funcionario->funcionarioPermissoes->acesso_galaxpay = $acessoGalaxpay;
+
+            // SALVANDO NOVOS DADOS NO BANCO
+            $funcionario->save();
+            $funcionario->funcionarioPermissoes->save();
+
+            // REDIRECIONANDO A PAGINA
+            return redirect()->route('funcionarios')->with('SUCCESS', ['Funcionário alterado com sucesso.']);
         } catch (Exception $e) {
             // REDIRECIONANDO A PAGINA
             return redirect()->back()->withInput()->withErrors([$e->getMessage()]);

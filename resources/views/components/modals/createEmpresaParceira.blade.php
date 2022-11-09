@@ -45,6 +45,7 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" form="formModalCreateEmpresaParceira" class="btn btn-info text-white fw-bold">Cadastrar</button>
             </div>
         </div>

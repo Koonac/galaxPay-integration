@@ -27,7 +27,22 @@ class empresasParceirasController extends Controller
         $empresasParceiras = array();
 
         // CAPTURANDO AS EMPRESAS ASSOCIADAS AO USUARIO
-        $empresasAssociadas = $request->user()->empresasAssociadas;
+
+        switch ($request->user()->role) {
+            case 'empresaParceira':
+                $userLinkedId = $request->user()->userPrimario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                $empresasAssociadas = $userPrimario->empresasAssociadas;
+                break;
+            case 'Funcionario':
+                $userLinkedId = $request->user()->userPrimarioFuncionario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                $empresasAssociadas = $userPrimario->empresasAssociadas;
+                break;
+            default:
+                $empresasAssociadas = $request->user()->empresasAssociadas;
+                break;
+        }
 
         // ANALISANDO SE FOI ENCOTRADO EMPRESAS ASSOCIADAS
         if (count($empresasAssociadas) > 0) {
@@ -44,7 +59,6 @@ class empresasParceirasController extends Controller
     public function cadastroEmpresaParceira(Request $request)
     {
         try {
-
             // CRIANDO MODELO DE USUARIO
             $empresaParceiraUser = new User();
             $empresaParceira = new empresas_parceiras();
@@ -86,9 +100,25 @@ class empresasParceirasController extends Controller
             // SALVANDO NOVO CADASTRO NO BANCO
             $empresaParceiraUser->save();
 
+            switch ($request->user()->role) {
+                case 'empresaParceira':
+                    $userLinkedId = $request->user()->userPrimario->user_linked_id;
+                    $userPrimario = User::find($userLinkedId);
+                    $idUserPrimario = $userPrimario->id;
+                    break;
+                case 'Funcionario':
+                    $userLinkedId = $request->user()->userPrimarioFuncionario->user_linked_id;
+                    $userPrimario = User::find($userLinkedId);
+                    $idUserPrimario = $userPrimario->id;
+                    break;
+                default:
+                    $idUserPrimario = $request->user()->id;
+                    break;
+            }
+
             // CRIANDO VINCULO DO USER CRIADO COM O USUARIO LOGADO
             $empresaParceira->user_id = $empresaParceiraUser->id;
-            $empresaParceira->user_linked_id = $request->user()->id;
+            $empresaParceira->user_linked_id = $idUserPrimario;
 
             // SALVANDO NOVO CADASTRO NO BANCO
             $empresaParceira->save();
@@ -104,7 +134,6 @@ class empresasParceirasController extends Controller
     public function editEmpresaParceira(Request $request, User $empresaParceira)
     {
         try {
-
             // TRATANDO VARIÁVEIS
             $cpfCnpjEmpresa     = trim($request->cpfCnpj);
             $cpfCnpjEmpresa     = str_replace(".", "", $cpfCnpjEmpresa);
@@ -135,7 +164,6 @@ class empresasParceirasController extends Controller
             $empresaParceira->email = $emailLogin;
             $empresaParceira->telefone_1 = $telefoneEmpresa1;
             $empresaParceira->telefone_2 = $telefoneEmpresa2;
-            $empresaParceira->role = 'empresaParceira';
 
             // SALVANDO NOVO CADASTRO NO BANCO
             $empresaParceira->save();

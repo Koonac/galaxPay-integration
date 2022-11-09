@@ -42,35 +42,43 @@ class perfilController extends Controller
         return redirect()->back()->withInput()->with('SUCCESS', ['Senha alterada com sucesso.']);
     }
 
-    public function editUser(Request $request)
+    public function editUser(Request $request, User $userEdit)
     {
-        // CAPTURANDO MODEL DO USUARIO QUE ESTA EDITANDO
-        $userEdit = User::find($request->idUserEdit);
-
-        // CAPTURANDO MODEL DE PARAMETROS DA GALAXPAY ASSOCIADO AO USUARIO QUE ESTA EDITANDO
-        $galaxpayParametros = galaxpay_parametros::firstWhere('user_id', $request->idUserEdit);
-
-        // VERIFICANDO SE JA EXISTE PARAMETROS ASSOCIADOS A ESTE USER
-        if (empty($galaxpayParametros)) {
-            // CASO NAO TENHA CRIA UM NOVO OBJETO
-            $galaxpayParametros = new galaxpay_parametros();
-            $galaxpayParametros->user_id = $request->idUserEdit;
-        }
-
+        // TRATANDO VARIÁVEIS
+        $cpfCnpj     = trim($request->cpfCnpj);
+        $cpfCnpj     = str_replace(".", "", $cpfCnpj);
+        $cpfCnpj     = str_replace(",", "", $cpfCnpj);
+        $cpfCnpj     = str_replace("-", "", $cpfCnpj);
+        $cpfCnpj     = str_replace("/", "", $cpfCnpj);
+        $telefone1   = trim($request->telefone1);
+        $telefone1   = str_replace(" ", "", $telefone1);
+        $telefone1   = str_replace("-", "", $telefone1);
+        $telefone1   = str_replace("(", "", $telefone1);
+        $telefone1   = str_replace(")", "", $telefone1);
+        $telefone2   = trim($request->telefone2);
+        $telefone2   = str_replace(" ", "", $telefone2);
+        $telefone2   = str_replace("-", "", $telefone2);
+        $telefone2   = str_replace("(", "", $telefone2);
+        $telefone2   = str_replace(")", "", $telefone2);
         // ADICIONANDO RECEBIDOS PELO REQUEST AO MODEL
-        $userEdit->name = $request->nomePerfil;
-        // $userEdit->cpf = $request->cpfPerfil;
-        $userEdit->login = $request->usuarioPerfil;
-        $userEdit->email = $request->emailPerfil;
-        $galaxpayParametros->galax_id = $request->galaxId;
-        $galaxpayParametros->galax_hash = $request->galaxHash;
-
-        $request->empresaPerfil;
-        $request->cnpjPerfil;
+        $userEdit->razao_social     = $request->razaoSocial;
+        $userEdit->nome_fantasia    = $request->nomeFantasia;
+        $userEdit->cpf_cnpj         = $cpfCnpj;
+        $userEdit->name             = $request->nomePerfil;
+        $userEdit->telefone_1       = $telefone1;
+        $userEdit->telefone_2       = $telefone2;
+        $userEdit->login            = $request->usuarioPerfil;
+        $userEdit->email            = $request->emailPerfil;
 
         // SALVANDO ALTERAÇÕES
-        $galaxpayParametros->save();
         $userEdit->save();
+
+        // ANALISANDO SE O USER É ADMIN
+        if ($userEdit->role == 'Admin') {
+            $userEdit->galaxPayParametros->galax_id = $request->galaxId;
+            $userEdit->galaxPayParametros->galax_hash = $request->galaxHash;
+            $userEdit->galaxPayParametros->save();
+        }
 
         return redirect()->back()->withInput()->with('SUCCESS', ['Alterações realizadas com sucesso.']);
     }

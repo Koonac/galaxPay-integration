@@ -19,11 +19,11 @@ class CreateFuncionariosTable extends Migration
             $table->unsignedBigInteger('user_linked_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_linked_id')->references('id')->on('users')->onDelete('cascade');
-            $table->enum('acesso_clientes', ['S', 'N']);
-            $table->enum('acesso_empresas', ['S', 'N']);
-            $table->enum('acesso_financeiro', ['S', 'N']);
-            $table->enum('acesso_galaxpay', ['S', 'N']);
-            $table->enum('acesso_funcionarios', ['S', 'N']);
+            $table->enum('acesso_clientes', ['S', 'N'])->default('N');
+            $table->enum('acesso_empresas', ['S', 'N'])->default('N');
+            $table->enum('acesso_financeiro', ['S', 'N'])->default('N');
+            $table->enum('acesso_galaxpay', ['S', 'N'])->default('N');
+            $table->enum('acesso_funcionarios', ['S', 'N'])->default('N');
             $table->timestamps();
         });
     }

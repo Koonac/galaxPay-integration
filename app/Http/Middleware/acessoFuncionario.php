@@ -33,6 +33,9 @@ class acessoFuncionario
                     case '/financeiro':
                         if ($request->user()->funcionarioPermissoes->acesso_financeiro == 'S') return $next($request);
                         break;
+                    case '/caixa':
+                        if ($request->user()->funcionarioPermissoes->acesso_caixa == 'S') return $next($request);
+                        break;
                     case '/funcionarios':
                         if ($request->user()->funcionarioPermissoes->acesso_funcionarios == 'S') return $next($request);
                         break;

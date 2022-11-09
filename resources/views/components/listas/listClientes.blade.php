@@ -14,7 +14,7 @@
                             <td>Nome</td>
                             <td>CPF/CNPJ</td>
                             <td>Telefone</td>
-                            <td>Status</td>
+                            <td class="text-center">Status</td>
                             <td width='80px'></td>
                         </tr>
                     </thead>
@@ -28,7 +28,7 @@
                                     <p> {{$galaxPayCliente->nome_cliente}} </p>
                                 </td>
                                 <td class='border'>
-                                    <p class="cnpjMask"> {{$galaxPayCliente->cpf_cnpj_cliente}} </p>
+                                    <p class="cnpjMask" > {{$galaxPayCliente->cpf_cnpj_cliente}} </p>
                                 </td>
                                 <td class='border'>
                                     <p class="telefoneMask"> {{$galaxPayCliente->telefone_cliente_1}} </p>
@@ -52,7 +52,7 @@
                                 </td>
                                 <td align="right" class="bg-purple">
                                     <a href="{{route('clientes.gerarCartaoCliente', ['idGalaxPayCliente' => $galaxPayCliente->id])}}" class="btn btn-info text-white" target="__blank"><i class="fa-solid fa-print"></i></i></a>
-                                    <a href="{{route('clientes.informacoesCliente', [$galaxPayCliente->id])}}" class="btn btn-warning text-white"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="{{route('clientes.informacoesCliente', [$galaxPayCliente])}}" class="btn btn-warning text-white"><i class="fa-solid fa-eye"></i></a>
                                 </td>
                             </tr>
                         @endforeach

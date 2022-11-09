@@ -36,6 +36,7 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" form="IdFormModal" class="btn btn-info text-white fw-bold">Salvar alterações</button>
             </div>
         </div>

@@ -6,7 +6,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="{{route('financeiro.adicionarRecebimento', $caixaFinanceiro)}}" method="POST" id="formModalRecebimento">
+                <form action="{{route('caixa.adicionarRecebimento', $caixaFinanceiro)}}" method="POST" id="formModalRecebimento">
                     @method('POST')
                     @csrf
                     {{-- CAMPOS DO MODAL --}}
@@ -27,6 +27,7 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" form="formModalRecebimento" class="btn btn-info text-white fw-bold">Adicionar</button>
             </div>
         </div>

@@ -34,9 +34,15 @@ class galaxPayControllerAPI extends Controller
         $permissoesApi = 'customers.read customers.write plans.read plans.write transactions.read transactions.write webhooks.write cards.read cards.write card-brands.read subscriptions.read subscriptions.write charges.read charges.write boletos.read';
         $permissaoUserLogado = $request->user()->role;
         $userPrimario = User::find($request->user()->id);
-        if ($permissaoUserLogado == 'empresaParceira') {
-            $userLinkedId = $request->user()->userPrimario->user_linked_id;
-            $userPrimario = User::find($userLinkedId);
+        switch ($permissaoUserLogado) {
+            case 'empresaParceira':
+                $userLinkedId = $request->user()->userPrimario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                break;
+            case 'Funcionario':
+                $userLinkedId = $request->user()->userPrimarioFuncionario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                break;
         }
 
         // CAPTURANDO PARAMETROS DO USUARIO
@@ -285,9 +291,15 @@ class galaxPayControllerAPI extends Controller
             // ANALISANDO TIPO DE USUARIO LOGADO
             $permissaoUserLogado = $request->user()->role;
             $userPrimario = User::find($request->user()->id);
-            if ($permissaoUserLogado == 'empresaParceira') {
-                $userLinkedId = $request->user()->userPrimario->user_linked_id;
-                $userPrimario = User::find($userLinkedId);
+            switch ($permissaoUserLogado) {
+                case 'empresaParceira':
+                    $userLinkedId = $request->user()->userPrimario->user_linked_id;
+                    $userPrimario = User::find($userLinkedId);
+                    break;
+                case 'Funcionario':
+                    $userLinkedId = $request->user()->userPrimarioFuncionario->user_linked_id;
+                    $userPrimario = User::find($userLinkedId);
+                    break;
             }
 
             // PERCORRENDO LAÇO DE ENDEREÇOS
@@ -363,8 +375,8 @@ class galaxPayControllerAPI extends Controller
                         if (empty($indexCpfDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $cpfCampoPersonalizadoDependentes . ']']]);
                         if (empty($indexNascimentoDependente)) return view('components.messages.returnMessages', ['ERROR' => ['Erro: Campo dependente não preenchido na GalaxPay. [' . $nascimentoCampoPersonalizadoDependentes . ']']]);
 
-                        // GERANDO NUMERO DE MATRICULA (ANO ATUAL + CODIGO DO CLIENTE NA GALAXPAY + 3 ULTIMOS NUMERO DO CPF)
-                        $matriculaDependente = date('Y') . $codigoClienteGalaxpay . substr($campoExtras[$indexCpfDependente]->tagValue, -3);
+                        // GERANDO NUMERO DE MATRICULA (CODIGO DO CLIENTE NA GALAXPAY + ANO ATUAL + 3 ULTIMOS NUMERO DO CPF)
+                        $matriculaDependente = $codigoClienteGalaxpay . date('Y') . substr($campoExtras[$indexCpfDependente]->tagValue, -3);
 
                         // CRIANDO MODEL
                         $clientesDependentesGalaxpay = new clientes_dependentes_galaxpay();
@@ -438,9 +450,6 @@ class galaxPayControllerAPI extends Controller
             return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ ' . $response->error->message . ' ]']]);
         }
 
-        // GERANDO NUMERO DE MATRICULA
-        $matricula = str_pad(date('Y') . $response->Customers[0]->galaxPayId, 10, 0);
-
         // PERCORRENDO LAÇO DE ENDEREÇOS
         foreach ($response->Customers[0]->Address as $keyAddress => $valueAddress) {
             // ANALISANDO SE O CAMPO COMPLEMENT É VAZIO
@@ -455,7 +464,6 @@ class galaxPayControllerAPI extends Controller
         // ATUALIZANDO VALORES AO MODEL
         $clienteGalaxpay->codigo_cliente_galaxpay          = $response->Customers[0]->galaxPayId;
         $clienteGalaxpay->meu_id                           = $response->Customers[0]->myId;
-        $clienteGalaxpay->matricula                        = $matricula;
         $clienteGalaxpay->nome_cliente                     = $response->Customers[0]->name;
         $clienteGalaxpay->cpf_cnpj_cliente                 = $response->Customers[0]->document;
         $clienteGalaxpay->email_cliente_1                  = empty($response->Customers[0]->emails[0]) ? '' : $response->Customers[0]->emails[0];
@@ -572,9 +580,15 @@ class galaxPayControllerAPI extends Controller
         $accessToken                = $generateAcessToken['access_token'];
         $permissaoUserLogado = $request->user()->role;
         $userPrimario = User::find($request->user()->id);
-        if ($permissaoUserLogado == 'empresaParceira') {
-            $userLinkedId = $request->user()->userPrimario->user_linked_id;
-            $userPrimario = User::find($userLinkedId);
+        switch ($permissaoUserLogado) {
+            case 'empresaParceira':
+                $userLinkedId = $request->user()->userPrimario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                break;
+            case 'Funcionario':
+                $userLinkedId = $request->user()->userPrimarioFuncionario->user_linked_id;
+                $userPrimario = User::find($userLinkedId);
+                break;
         }
         // CAPTURANDO MODEL galaxPayClientes
         $galaxPayClientes = $userPrimario->galaxPayClientes();
@@ -606,17 +620,21 @@ class galaxPayControllerAPI extends Controller
             // CAPTURANDO RESPOSTA DA API
             $response = json_decode($response);
 
-            // VERIFICANDO ERRO
-            if (!empty($response->error)) {
-                // REDIRECIONANDO COM ERRO
-                return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ ' . $response->error->message . "\n" .  json_encode($response->error->details) . ' ]']]);
+            if ($response->totalQtdFoundInPage <= 0) {
+                return view('components.messages.returnMessages', ['WARNING' => ['Nenhum registro encontrado.']]);
             } else {
-                $importaClienteGalaxPay = $this->importaClienteGalaxPay($request, $response);
-                // ANALISANDO RESPOSTA DE ERRO
-                if ($importaClienteGalaxPay['statusRetorno'] != 'SUCCESS') {
-                    return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ OCORREU UM ERRO INESPERADO. ]']]);
+                // VERIFICANDO ERRO
+                if (!empty($response->error)) {
+                    // REDIRECIONANDO COM ERRO
+                    return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ ' . $response->error->message . "\n" .  json_encode($response->error->details) . ' ]']]);
                 } else {
-                    $retorno = $importaClienteGalaxPay['clienteGalaxpayCadastrado'];
+                    $importaClienteGalaxPay = $this->importaClienteGalaxPay($request, $response);
+                    // ANALISANDO RESPOSTA DE ERRO
+                    if ($importaClienteGalaxPay['statusRetorno'] != 'SUCCESS') {
+                        return view('components.messages.returnMessages', ['ERROR' => ['Erro: [ OCORREU UM ERRO INESPERADO NA IMPORTAÇÃO. ]']]);
+                    } else {
+                        $retorno = $importaClienteGalaxPay['clienteGalaxpayCadastrado'];
+                    }
                 }
             }
         } else {
@@ -636,71 +654,78 @@ class galaxPayControllerAPI extends Controller
 
     public function editarClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
     {
-        // INICIALIZANDO VARIÁVEIS
-        $enderecoClienteGalaxpay = array();
-        $data = array();
-        if (!empty($clienteGalaxPay->email_cliente_2)) {
-            $emails = [
-                $clienteGalaxPay->email_cliente_1,
-                $clienteGalaxPay->email_cliente_2
+        try {
+            // INICIALIZANDO VARIÁVEIS
+            $enderecoClienteGalaxpay = array();
+            $data = array();
+            if (!empty($clienteGalaxPay->email_cliente_2)) {
+                $emails = [
+                    $clienteGalaxPay->email_cliente_1,
+                    $clienteGalaxPay->email_cliente_2
+                ];
+            } else {
+                $emails = [
+                    $clienteGalaxPay->email_cliente_1,
+                ];
+            };
+
+            if (!empty($clienteGalaxPay->enderecoClienteGalaxpay)) {
+                // MONTANDO ARRAY DE ENDERECO
+                $enderecoClienteGalaxpay = [
+                    'zipCode' => $clienteGalaxPay->enderecoClienteGalaxpay->cep,
+                    'street' => $clienteGalaxPay->enderecoClienteGalaxpay->logradouro,
+                    'number' => $clienteGalaxPay->enderecoClienteGalaxpay->numero,
+                    'complement' => $clienteGalaxPay->enderecoClienteGalaxpay->complemento,
+                    'neighborhood' => $clienteGalaxPay->enderecoClienteGalaxpay->bairro,
+                    'city' => $clienteGalaxPay->enderecoClienteGalaxpay->cidade,
+                    'state' => $clienteGalaxPay->enderecoClienteGalaxpay->estado
+                ];
+            }
+
+            // MONTANDO ARRAY DE DATA
+            $data = [
+                'myId' => $clienteGalaxPay->meu_id,
+                'name' => $clienteGalaxPay->nome_cliente,
+                'document' => $clienteGalaxPay->cpf_cnpj_cliente,
+                'emails' => $emails,
+                'phones' => [
+                    $clienteGalaxPay->telefone_cliente_1,
+                    $clienteGalaxPay->telefone_cliente_2
+                ],
+                'Address' => $enderecoClienteGalaxpay,
+                // 'ExtraFields' => []
             ];
-        } else {
-            $emails = [
-                $clienteGalaxPay->email_cliente_1,
-                $clienteGalaxPay->email_cliente_2
-            ];
-        };
-
-        if (!empty($clienteGalaxPay->enderecoClienteGalaxpay)) {
-            // MONTANDO ARRAY DE ENDERECO
-            $enderecoClienteGalaxpay = [
-                'zipCode' => $clienteGalaxPay->enderecoClienteGalaxpay->cep,
-                'street' => $clienteGalaxPay->enderecoClienteGalaxpay->logradouro,
-                'number' => $clienteGalaxPay->enderecoClienteGalaxpay->numero,
-                'complement' => $clienteGalaxPay->enderecoClienteGalaxpay->complemento,
-                'neighborhood' => $clienteGalaxPay->enderecoClienteGalaxpay->bairro,
-                'city' => $clienteGalaxPay->enderecoClienteGalaxpay->cidade,
-                'state' => $clienteGalaxPay->enderecoClienteGalaxpay->estado
-            ];
-        }
-
-        // MONTANDO ARRAY DE DATA
-        $data = [
-            'myId' => $clienteGalaxPay->meu_id,
-            'name' => $clienteGalaxPay->nome_cliente,
-            'document' => $clienteGalaxPay->cpf_cnpj_cliente,
-            'emails' => $emails,
-            'phones' => [
-                $clienteGalaxPay->telefone_cliente_1,
-                $clienteGalaxPay->telefone_cliente_2
-            ],
-            'Address' => $enderecoClienteGalaxpay,
-            // 'ExtraFields' => []
-        ];
-        // CAPTURANDO ACCESS TOKEN
-        $generateAcessToken = $this->generateAcessToken($request);
-        // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
-        if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
-            // REDIRECIONANDO COM ERRO
-            return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);
-        }
-        // INICIALIZANDO VARIAVEIS 
-        $accessToken                = $generateAcessToken['access_token'];
+            // CAPTURANDO ACCESS TOKEN
+            $generateAcessToken = galaxPayControllerAPI::generateAcessToken($request);
+            // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
+            if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
+                // REDIRECIONANDO COM ERRO
+                return redirect()->back()->withErrors(['Erro: ' . $generateAcessToken['msgErro']]);
+            }
+            // INICIALIZANDO VARIAVEIS 
+            $accessToken                = $generateAcessToken['access_token'];
 
 
-        // MONTANDO CORPO PARA ENVIO DA API
-        $response = Http::withHeaders([
-            'Authorization' => "Bearer $accessToken",
-            'Content-Type' => 'application/json'
-        ])->put("https://api.sandbox.cloud.galaxpay.com.br/v2/customers/" . $clienteGalaxPay->codigo_cliente_galaxpay . "/galaxPayId", $data);
+            // MONTANDO CORPO PARA ENVIO DA API
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer $accessToken",
+                'Content-Type' => 'application/json'
+            ])->put("https://api.sandbox.cloud.galaxpay.com.br/v2/customers/" . $clienteGalaxPay->codigo_cliente_galaxpay . "/galaxPayId", $data);
 
-        // CAPTURANDO RESPOSTA DA API
-        $response = json_decode($response);
-        if (!empty($response->error)) {
-            // REDIRECIONANDO COM ERRO
-            return redirect()->route('clientes.informacoesCliente', $clienteGalaxPay->id)->withErrors($response->error->message . " [ " .  json_encode($response) . " ]");
-        } else {
-            return redirect()->route('clientes.informacoesCliente', $clienteGalaxPay->id)->with('SUCCESS', ['Alterações realizadas com sucesso.']);
+            // CAPTURANDO RESPOSTA DA API
+            $response = json_decode($response);
+            if (!empty($response->error)) {
+                // REDIRECIONANDO COM ERRO
+                throw new Exception($response->error->message . " [ " .  json_encode($response) . " ]");
+            } else {
+                $retorno['statusRetorno'] = 'SUCCESS';
+                $retorno['msgRetorno'] = 'Alterações realizadas com sucesso.';
+                return $retorno;
+            }
+        } catch (Exception $e) {
+            $retorno['statusRetorno'] = 'ERROR';
+            $retorno['msgRetorno'] = $e->getMessage();
+            return $retorno;
         }
     }
 }

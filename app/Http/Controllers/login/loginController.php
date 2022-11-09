@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\login;
 
 use App\Http\Controllers\Controller;
+use App\Models\galaxpay_parametros;
 use App\Models\User;
 use Exception;
 use Illuminate\Auth\Events\PasswordReset;
@@ -61,6 +62,11 @@ class loginController extends Controller
         $user->email = $request->emailLogin;
         $user->password = Hash::make($request->passwordLogin);
         $user->role = 'Admin';
+
+        // CRIANDO MODEL DE GALAXPAY PARAMETROS
+        $galaxpayParametros = new galaxpay_parametros();
+        $galaxpayParametros->user_id = $request->idUserEdit;
+        $galaxpayParametros->save();
 
         // SALVANDO DADOS NO BANCO
         $user->save();

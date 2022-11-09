@@ -9,7 +9,7 @@
                         <option value="galaxPayIds">GalaxPay ID</option>
                         <option value="documents" selected>CPF ou CNPJ</option>
                       </select>
-                    <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente" value="507 698 127 91">
+                    <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente">
                     <button type="button" id='btnImportarClienteGalaxPay' class="btn btn-info text-white fw-bold">Importar</button>
                 </div>
             </div>

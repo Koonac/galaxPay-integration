@@ -29,4 +29,21 @@ $(function () {
     // SETANDO CLASS ACTIVE NO NAV COM ID DO PATHNAME
     $('#' + idRotaAtiva).addClass('active')
 
+    // FUNÇÃO PARA COPIAR INPUT
+    function copyToClipboard(elemento) {
+        // set focus to hidden element and select the content
+        $(elemento).focus();
+        // select all the text therein  
+        $(elemento).select();
+
+        var succeed;
+        try {
+            succeed = document.execCommand("copy");
+        } catch (e) {
+            succeed = false;
+        }
+
+        return succeed;
+    }
+
 });

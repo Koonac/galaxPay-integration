@@ -18,7 +18,6 @@ $(function () {
                 url: url,
                 method: 'GET',
                 success: function (data) {
-                    $('#returnMessageImportacaoCliente').html('<div class="alert alert-success shadow mt-2">Cliente importado com sucesso.</div>')
                     $('#listGalaxPayClientes').html(data)
                 },
                 error: function () {
@@ -50,7 +49,6 @@ $(function () {
                         $('#listGalaxPayClientes').html(data)
                     },
                     error: function (data) {
-                        console.log(data)
                         $('#listGalaxPayClientes').html('<div class="alert alert-danger shadow mt-2">Erro: [ Ocorreu um erro interno. ]</div>')
                     }
                 })

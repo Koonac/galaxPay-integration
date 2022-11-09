@@ -20,7 +20,7 @@ class User extends Authenticatable
 
     function galaxPayParametros()
     {
-        return $this->hasOne(galaxpay_parametros::class);
+        return $this->hasOne(galaxpay_parametros::class, 'user_id');
     }
 
     function galaxPayClientes()
@@ -31,6 +31,11 @@ class User extends Authenticatable
     function userPrimario()
     {
         return $this->hasOne(empresas_parceiras::class, 'user_id');
+    }
+
+    function userPrimarioFuncionario()
+    {
+        return $this->hasOne(funcionarios::class, 'user_id');
     }
 
     function empresasAssociadas()
@@ -51,6 +56,11 @@ class User extends Authenticatable
     function caixaFinanceiro()
     {
         return $this->hasMany(caixa_financeiro::class, 'id_user_abertura');
+    }
+
+    function contasRecebimento()
+    {
+        return $this->hasMany(contas::class, 'id_user');
     }
     /**
      * The attributes that are mass assignable.

@@ -46,6 +46,11 @@
                 <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="financeiro" id="financeiro" href="{{route('financeiro')}}">Financeiro</a>
               </li>
               @endcan
+              @can('acessoCaixa')
+              <li class="nav-item flex-md-fill">
+                <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="caixa" id="caixa" href="{{route('caixa')}}">Caixa</a>
+              </li>
+              @endcan
               @can('acessoGalaxpay')
               <li class="nav-item flex-md-fill">
                 <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="galaxPay" id="galaxPay" href="{{route('galaxPay')}}">GalaxPay</a>

@@ -47,6 +47,13 @@ class AuthServiceProvider extends ServiceProvider
                 return $user->role == 'Admin';
             }
         });
+        Gate::define('acessoCaixa', function ($user) {
+            if (isset($user->funcionarioPermissoes)) {
+                return $user->funcionarioPermissoes->acesso_caixa == 'S';
+            } else {
+                return $user->role == 'Admin';
+            }
+        });
         Gate::define('acessoGalaxpay', function ($user) {
             if (isset($user->funcionarioPermissoes)) {
                 return $user->funcionarioPermissoes->acesso_galaxpay == 'S';
