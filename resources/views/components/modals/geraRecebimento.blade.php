@@ -24,6 +24,28 @@
                             <textarea class="form-control" name="observacaoRecebimento" id="observacaoRecebimento" placeholder="Escreva uma observação para o recebimento..."></textarea>
                         </div>
                     </div>
+                    <div class="row py-2">
+                        <div class="col-12">
+                        <select class="form-select" name="contaRecebimento" id="contaRecebimento">
+                            @if (Auth::user()->contas)
+                                @foreach (Auth::user()->contas as $contaRecebimento)
+                                    <option value="{{$contaRecebimento->id}}">{{$contaRecebimento->descricao_conta}}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                        </div>
+                    </div>
+                    <div class="row py-2">
+                        <div class="col-12">
+                        <select class="form-select" name="galaxPayCliente" id="galaxPayCliente">
+                            @if (Auth::user()->galaxPayClientes)
+                                @foreach (Auth::user()->galaxPayClientes as $galaxPayCliente)
+                                    <option value="{{$galaxPayCliente->id}}">{{$galaxPayCliente->nome_cliente}}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

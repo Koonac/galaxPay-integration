@@ -4,6 +4,8 @@ namespace App\Http\Controllers\caixa;
 
 use App\Http\Controllers\Controller;
 use App\Models\caixa_financeiro;
+use App\Models\clientes_galaxpay;
+use App\Models\contas;
 use App\Models\despesas;
 use App\Models\recebimentos;
 use Illuminate\Http\Request;
@@ -86,10 +88,14 @@ class caixaController extends Controller
 
         // INICIALIZANDO MODEL
         $recebimentos = new recebimentos;
+
         // ATRIBUINDO VALORES DE VARIAVEIS
         $recebimentos->valor_recebimento        = $valorRecebimento;
         $recebimentos->observacao_recebimento   = $observacaoRecebimento;
         $recebimentos->data_recebimento         = date('Y-m-d H:i:s');
+        $recebimentos->user_create              = $request->user()->id;
+        $recebimentos->conta_recebimento        = $request->contaRecebimento;
+        $recebimentos->cliente_galaxpay_recebimento        = $request->galaxPayCliente;
         $valorAtualCaixa = str_replace(',', '', $caixaFinanceiro->valor_caixa);
         $valorRecebimento = str_replace(',', '', $valorRecebimento);
         $valorCaixa = number_format(($valorAtualCaixa + $valorRecebimento), 2, '.', ',');
@@ -97,6 +103,21 @@ class caixaController extends Controller
         $caixaFinanceiro->recebimentos()->save($recebimentos);
         $caixaFinanceiro->save();
 
+        // INICILIZANDO MODEL DE CONTAS
+        $conta = contas::find($request->contaRecebimento);
+
+        // ANALISANDO SE EXISTE ESTA CONTA
+        if (isset($conta)) {
+            // INICIALIZANDO VARIÁVEIS
+            $valorConta = str_replace(',', '', $conta->valor_conta);
+            $valorConta = number_format(($valorConta + $valorRecebimento), 2, '.', ',');
+            $conta->valor_conta = $valorConta;
+
+            // SALVANDO NOVOS DADOS
+            $conta->save();
+        }
+
+        // REDIRECIONANDO PARA PAGINA ANTERIOR
         return redirect()->back()->with(['SUCCESS' => ['Recebimento adicionado com sucesso ao caixa']]);
     }
 
@@ -110,16 +131,33 @@ class caixaController extends Controller
 
         // INICIALIZANDO MODEL
         $despesas = new despesas;
+
         // ATRIBUINDO VALORES DE VARIAVEIS
         $despesas->valor_despesa        = $valorDespesa;
         $despesas->observacao_despesa   = $observacaoDespesa;
         $despesas->data_despesa         = date('Y-m-d H:i:s');
+        $despesas->user_create              = $request->user()->id;
+        $despesas->conta_despesa        = $request->contaDespesa;
         $valorAtualCaixa = str_replace(',', '', $caixaFinanceiro->valor_caixa);
         $valorDespesa = str_replace(',', '', $valorDespesa);
         $valorCaixa = number_format(($valorAtualCaixa - $valorDespesa), 2, '.', ',');
         $caixaFinanceiro->valor_caixa = $valorCaixa;
         $caixaFinanceiro->despesas()->save($despesas);
         $caixaFinanceiro->save();
+
+        // INICILIZANDO MODEL DE CONTAS
+        $conta = contas::find($request->contaDespesa);
+
+        // ANALISANDO SE EXISTE ESTA CONTA
+        if (isset($conta)) {
+            // INICIALIZANDO VARIÁVEIS
+            $valorConta = str_replace(',', '', $conta->valor_conta);
+            $valorConta = number_format(($valorConta - $valorDespesa), 2, '.', ',');
+            $conta->valor_conta = $valorConta;
+
+            // SALVANDO NOVOS DADOS
+            $conta->save();
+        }
 
         return redirect()->back()->with(['SUCCESS' => ['Despesa adicionada com sucesso ao caixa']]);
     }

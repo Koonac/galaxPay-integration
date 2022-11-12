@@ -24,6 +24,17 @@
                             <textarea class="form-control" name="observacaoDespesa" id="observacaoDespesa" placeholder="Escreva uma observação para o despesa..."></textarea>
                         </div>
                     </div>
+                    <div class="row py-2">
+                        <div class="col-12">
+                        <select class="form-select" name="contaDespesa" id="contaDespesa">
+                            @if (Auth::user()->contas)
+                                @foreach (Auth::user()->contas as $contaDespesa)
+                                    <option value="{{$contaDespesa->id}}">{{$contaDespesa->descricao_conta}}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

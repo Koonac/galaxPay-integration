@@ -1,0 +1,1 @@
+{{$galaxPayCliente->contratos}}

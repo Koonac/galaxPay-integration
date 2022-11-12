@@ -10,4 +10,14 @@ class contas extends Model
     use HasFactory;
 
     protected $table = 'contas';
+
+    function recebimentos()
+    {
+        return $this->hasMany(recebimentos::class, 'conta_recebimento');
+    }
+
+    function despesas()
+    {
+        return $this->hasMany(despesas::class, 'conta_despesa');
+    }
 }

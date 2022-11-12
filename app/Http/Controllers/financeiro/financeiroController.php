@@ -21,10 +21,16 @@ class financeiroController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $contas = $request->user()->contasRecebimento;
+        $contas = $request->user()->contas;
 
         // RETORNANDO VIEW
         return view('financeiro.financeiro', ['contas' => $contas]);
+    }
+
+    public function visualizarConta(Request $request, contas $conta)
+    {
+
+        return view('financeiro.informacoesConta', ['conta' => $conta]);
     }
 
     public function criarConta(Request $request)

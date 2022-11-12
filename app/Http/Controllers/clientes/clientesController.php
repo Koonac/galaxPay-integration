@@ -46,6 +46,11 @@ class clientesController extends Controller
         return view('clientes.informacoesCliente', ['galaxPayCliente' => $clienteGalaxPay]);
     }
 
+    public function criarClienteGalaxPay(Request $request)
+    {
+        return view('clientes.criarCliente');
+    }
+
     public function editClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
     {
         // TRATANDO VARIÁVEIS

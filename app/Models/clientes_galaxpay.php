@@ -34,4 +34,9 @@ class clientes_galaxpay extends Model
     {
         return $this->hasMany(historico_atendimento_cliente::class, 'cliente_galaxpay_id');
     }
+
+    function contratos()
+    {
+        return $this->hasOne(contratos::class, 'cliente_galaxpay');
+    }
 }

@@ -58,7 +58,7 @@ class User extends Authenticatable
         return $this->hasMany(caixa_financeiro::class, 'id_user_abertura');
     }
 
-    function contasRecebimento()
+    function contas()
     {
         return $this->hasMany(contas::class, 'id_user');
     }

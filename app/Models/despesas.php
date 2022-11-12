@@ -10,4 +10,9 @@ class despesas extends Model
     use HasFactory;
 
     protected $table = 'despesas';
+
+    function user()
+    {
+        return $this->belongsTo(User::class, 'user_create', 'id');
+    }
 }

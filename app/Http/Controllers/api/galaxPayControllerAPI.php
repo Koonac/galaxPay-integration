@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\campo_personalizado_cliente_galaxpay;
 use App\Models\clientes_dependentes_galaxpay;
 use App\Models\clientes_galaxpay;
+use App\Models\contratos;
 use App\Models\endereco_cliente_galaxpay;
 use App\Models\User;
 use DateInterval;
@@ -351,6 +352,7 @@ class galaxPayControllerAPI extends Controller
             if ($cadastraEnderecoCliente) {
                 $clienteGalaxpay->enderecoClienteGalaxpay()->save($enderecoClienteGalaxpay);
             };
+
             // VERIFICANDO CAMPOS EXTRAS
             if (!empty($campoExtras)) {
 
@@ -410,6 +412,67 @@ class galaxPayControllerAPI extends Controller
             $retorno['statusRetorno'] = 'SUCCESS';
             $retorno['clienteGalaxpayCadastrado'] = $clienteGalaxpay;
             return $retorno;
+        }
+    }
+
+    public function importaContratoCliente(Request $request, clientes_galaxpay $clienteGalaxpay)
+    {
+        try {
+            $generateAcessToken = $this->generateAcessToken($request);
+            // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
+            if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
+                throw new Exception($generateAcessToken['msgErro']);
+            }
+            $accessToken = $generateAcessToken['access_token'];
+
+            // MONTANDO CORPO PARA ENVIO DA API
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer $accessToken",
+                'Content-Type' => 'application/json'
+            ])->get("https://api.sandbox.cloud.galaxpay.com.br/v2/subscriptions?customerGalaxPayIds=$clienteGalaxpay->codigo_cliente_galaxpay40&startAt=0&limit=100");
+
+            // CAPTURANDO RESPOSTA DA API
+            $response = json_decode($response);
+
+            // ANALISAR SE O CONTRATO JA FOI IMPORTADO PELO CODIGO GALAXID DELE
+            // CASO SIM, ATUALIZAR CONTRATO, SE NAO IMPORTAR
+
+            // ANALISANDO QUANTIDADE DE CONTRATOS
+            if ($response->totalQtdFoundInPage <= 0) {
+                return redirect()->back()->with(['WARNING' => ['Nenhum contrato encontrato para importação.']]);
+            } else {
+                // PERCORRENDO LAÇO DE CONTRATOS API
+                for ($i = 0; $i < $response->totalQtdFoundInPage; $i++) {
+
+                    // INICIALIZANDO MODEL
+                    $contratos = new contratos;
+                    // DEFININDO VARIÁVEIS
+                    $contratos->cliente_galaxpay = $clienteGalaxpay->id;
+                    $contratos->codigo_contrato = $response->Subscriptions[$i]->galaxPayId;
+                    $contratos->plano_codigo_contrato = $response->Subscriptions[$i]->galaxPayId;
+                    $contratos->valor_contrato = $response->Subscriptions[$i]->value;
+                    $contratos->quantidade_contrato = $response->Subscriptions[$i]->quantity;
+                    $contratos->periodo_pagamento = $response->Subscriptions[$i]->periodicity;
+                    $contratos->primeira_data_pagamento = $response->Subscriptions[$i]->firstPayDayDate;
+                    $contratos->forma_pagamento = $response->Subscriptions[$i]->mainPaymentMethodId;
+                    $contratos->link_pagamento = $response->Subscriptions[$i]->paymentLink;
+                    $contratos->informacao_adicional = $response->Subscriptions[$i]->additionalInfo;
+                    $contratos->status = $response->Subscriptions[$i]->status;
+
+                    // SALVANDO DADOS
+                    $contratos->save();
+                }
+            }
+
+            // VERIFICANDO ERRO
+            if (!empty($response->error)) {
+                throw new Exception($response->error->message . "\n" .  json_encode($response->error->details));
+            } else {
+                return redirect()->back()->with(['SUCCESS' => ['Sucesso ao importar contratos.']]);
+            }
+        } catch (Exception $e) {
+            $retorno['statusRetorno'] = 'ERROR';
+            return redirect()->back()->withInput()->withErrors(['Ocorreu um erro inesperado. Mensagem: ' . $e->getMessage()]);
         }
     }
 
@@ -652,6 +715,172 @@ class galaxPayControllerAPI extends Controller
         }
     }
 
+    public function criarClienteGalaxPay(Request $request)
+    {
+        try {
+            if (empty($request->nomeCliente)) {
+                throw new Exception('O atributo "nome do cliente" é obrigatório.');
+            } else if (empty($request->cpfCpnjCliente)) {
+                throw new Exception('O atributo "cpf ou cnpj do cliente" é obrigatório.');
+            } else if (empty($request->emailCliente1) && empty($request->emailCliente2)) {
+                throw new Exception('O atributo "email do cliente" é obrigatório.');
+            } else if (empty($request->cepEnderecoCliente)) {
+                throw new Exception('O atributo "cep do cliente" é obrigatório.');
+            } else if (empty($request->logradouroEnderecoCliente)) {
+                throw new Exception('O atributo "rua do cliente" é obrigatório.');
+            } else if (empty($request->numeroEnderecoCliente)) {
+                throw new Exception('O atributo "número do cliente" é obrigatório.');
+            } else if (empty($request->bairroEnderecoCliente)) {
+                throw new Exception('O atributo "bairro do cliente" é obrigatório.');
+            } else if (empty($request->cidadeEnderecoCliente)) {
+                throw new Exception('O atributo "cidade do cliente" é obrigatório.');
+            } else if (empty($request->estadoEnderecoCliente)) {
+                throw new Exception('O atributo "estado do cliente" é obrigatório.');
+            }
+            // INICIALIZANDO VARIÁVEIS
+            $nomeCliente                = $request->nomeCliente;
+            $cpfCnpjCliente             = trim($request->cpfCpnjCliente);
+            $cpfCnpjCliente             = str_replace(".", "", $cpfCnpjCliente);
+            $cpfCnpjCliente             = str_replace(",", "", $cpfCnpjCliente);
+            $cpfCnpjCliente             = str_replace("-", "", $cpfCnpjCliente);
+            $cpfCnpjCliente             = str_replace("/", "", $cpfCnpjCliente);
+            $emailCliente1              = $request->emailCliente1;
+            $emailCliente2              = $request->emailCliente2;
+            $telefoneCliente1           = $request->telefoneCliente1;
+            $telefoneCliente2           = $request->telefoneCliente2;
+            // ENDEREÇOS
+            $cepEnderecoCliente         = str_replace("-", "", $request->cepEnderecoCliente);
+            $logradouroEnderecoCliente  = $request->logradouroEnderecoCliente;
+            $numeroEnderecoCliente      = $request->numeroEnderecoCliente;
+            $complementoEnderecoCliente = $request->complementoEnderecoCliente;
+            $bairroEnderecoCliente      = $request->bairroEnderecoCliente;
+            $cidadeEnderecoCliente      = $request->cidadeEnderecoCliente;
+            $estadoEnderecoCliente      = $request->estadoEnderecoCliente;
+            // DEPENDENTES
+            $nomeDependente1            = $request->nomeDependente1;
+            $cpfDependente1             = $request->cpfDependente1;
+            $nascimentoDependente1      = $request->nascimentoDependente1;
+            $nomeDependente2            = $request->nomeDependente2;
+            $cpfDependente2             = $request->cpfDependente2;
+            $nascimentoDependente2      = $request->nascimentoDependente2;
+            $nomeDependente3            = $request->nomeDependente3;
+            $cpfDependente3             = $request->cpfDependente3;
+            $nascimentoDependente3      = $request->nascimentoDependente3;
+            $nomeDependente4            = $request->nomeDependente4;
+            $cpfDependente4             = $request->cpfDependente4;
+            $nascimentoDependente4      = $request->nascimentoDependente4;
+            $nomeDependente5            = $request->nomeDependente5;
+            $cpfDependente5             = $request->cpfDependente5;
+            $nascimentoDependente5      = $request->nascimentoDependente5;
+            $nomeDependente6            = $request->nomeDependente6;
+            $cpfDependente6             = $request->cpfDependente6;
+            $nascimentoDependente6      = $request->nascimentoDependente6;
+            $nomeDependente7            = $request->nomeDependente7;
+            $cpfDependente7             = $request->cpfDependente7;
+            $nascimentoDependente7      = $request->nascimentoDependente7;
+            $enderecoClienteGalaxpay    = array();
+            $data                       = array();
+            // GERANDO NUMERO DE DE ID (ANO ATUAL + 0001 + 3 ULTIMOS NUMERO DO CPF)
+            $myId = date('Y') . rand(0, 9999) . substr($cpfCnpjCliente, -3);
+
+            // ARRAY DE EMAILS
+            if (!empty($emailCliente2)) {
+                $emails = [
+                    $emailCliente1,
+                    $emailCliente2
+                ];
+            } else {
+                $emails = [
+                    $emailCliente1,
+                ];
+            };
+
+            // ARRAY DE TELEFONES
+            $telefones = [
+                $telefoneCliente1,
+                $telefoneCliente2
+            ];
+
+            // ARRAY DE CAMPOS EXTRAS
+            $camposExtras[] = [
+                'tagName' => 'CP_NOME_DEPENDENTE_01',
+                'tagValue' => $nomeDependente1
+            ];
+            $camposExtras[] = [
+                'tagName' => 'CP_CPF_DEPENDENTE_01',
+                'tagValue' => $cpfDependente1
+            ];
+            $camposExtras[] = [
+                'tagName' => 'CP_NASCIMENTO_DEPENDENTE_01',
+                'tagValue' => $nascimentoDependente1
+            ];
+
+            // MONTANDO ARRAY DE ENDERECO
+            $enderecoClienteGalaxpay = [
+                'zipCode' => $cepEnderecoCliente,
+                'street' => $logradouroEnderecoCliente,
+                'number' => $numeroEnderecoCliente,
+                'complement' => $complementoEnderecoCliente,
+                'neighborhood' => $bairroEnderecoCliente,
+                'city' => $cidadeEnderecoCliente,
+                'state' => $estadoEnderecoCliente
+            ];
+
+            // MONTANDO ARRAY DE DATA
+            $data = [
+                'myId' => $myId,
+                'name' => $nomeCliente,
+                'document' => $cpfCnpjCliente,
+                'emails' => $emails,
+                'phones' => $telefones,
+                'Address' => $enderecoClienteGalaxpay,
+                'ExtraFields' => $camposExtras
+            ];
+
+            // CAPTURANDO ACCESS TOKEN
+            $generateAcessToken = galaxPayControllerAPI::generateAcessToken($request);
+            // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
+            if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
+                // RETORNANDO ERRO
+                throw new Exception($generateAcessToken['msgErro']);
+            }
+            // INICIALIZANDO VARIAVEIS 
+            $accessToken                = $generateAcessToken['access_token'];
+
+            // MONTANDO CORPO PARA ENVIO DA API
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer $accessToken",
+                'Content-Type' => 'application/json'
+            ])->post("https://api.sandbox.cloud.galaxpay.com.br/v2/customers/", $data);
+
+            // CAPTURANDO RESPOSTA DA API
+            $response = json_decode($response);
+            if (!empty($response->error)) {
+                // REDIRECIONANDO COM ERRO
+                throw new Exception($response->error->message . " [ " .  json_encode($response) . " ]");
+            }
+
+            $response->Customer->status = 'active';
+            $resposta = (object) [
+                'totalQtdFoundInPage' => 1,
+                'Customers' => [$response->Customer]
+            ];
+
+            // IMPORTANDO CLIENTE CADASTRADO
+            $importaClienteGalaxPay = $this->importaClienteGalaxPay($request, $resposta);
+
+            // ANALISANDO RESPOSTA DE ERRO
+            if ($importaClienteGalaxPay['statusRetorno'] != 'SUCCESS') {
+                throw new Exception('Erro na importação, cliente cadastrado na Galaxpay ' . $response->Customers[0]->galaxPayId);
+            }
+
+            return redirect()->route('clientes')->with(['SUCCESS' => ['Cliente criado com sucesso. Nº Matricula: ' . $importaClienteGalaxPay['clienteGalaxpayCadastrado']->matricula]]);
+        } catch (Exception $e) {
+            $retorno['statusRetorno'] = 'ERROR';
+            return redirect()->back()->withInput()->withErrors(['Ocorreu um erro inesperado. Mensagem: ' . $e->getMessage()]);
+        }
+    }
+
     public function editarClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
     {
         try {
@@ -705,7 +934,6 @@ class galaxPayControllerAPI extends Controller
             // INICIALIZANDO VARIAVEIS 
             $accessToken                = $generateAcessToken['access_token'];
 
-
             // MONTANDO CORPO PARA ENVIO DA API
             $response = Http::withHeaders([
                 'Authorization' => "Bearer $accessToken",
@@ -720,8 +948,8 @@ class galaxPayControllerAPI extends Controller
             } else {
                 $retorno['statusRetorno'] = 'SUCCESS';
                 $retorno['msgRetorno'] = 'Alterações realizadas com sucesso.';
-                return $retorno;
             }
+            return $retorno;
         } catch (Exception $e) {
             $retorno['statusRetorno'] = 'ERROR';
             $retorno['msgRetorno'] = $e->getMessage();
