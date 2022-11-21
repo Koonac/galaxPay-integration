@@ -50,13 +50,13 @@
         @if (isset($caixaFinanceiro))
             <div class="row bg-light shadow border rounded mt-4 p-4">
                 <div class="col-md-12">
-                    <button type="button" id='btnAdicionaRecebimento' class="btn btn-success text-white fw-bold" data-bs-toggle="modal" data-bs-target="#modalRecebimento">+ Receber</button>
                     <button type="button" id='btnAdicionaDespesa' class="btn btn-danger text-white fw-bold" data-bs-toggle="modal" data-bs-target="#modalDespesa">- Pagar</button>
                 <table id="caixaFinanceiroTable" class="table table-hover">
                     <thead class="fw-bold">
                         <tr>
-                            <td width='15%'>Data/Hora</td>
-                            <td width='45%'>Observação</td>
+                            <td width='10%'>Data/Hora</td>
+                            <td width='15%'>Conta</td>
+                            <td width='35%'>Observação</td>
                             <td width='15%'>Usuário</td>
                             <td width='15%'>Cliente</td>
                             <td width='10%' class="text-end">Valor</td>
@@ -68,10 +68,11 @@
                                 <tr class="text-success">
                                     <input type="hidden" class="valorRecebimento decimalBrasileiro2Digitos" id="valorRecebimento" name="valorRecebimento" value="{{$recebimento->valor_recebimento}}">
                                     <td>{{date('d/m/Y H:i', strtotime($recebimento->data_recebimento))}}</td>
+                                    <td>{{$recebimento->contaRecebimento->descricao_conta}}</td>
                                     <td>{{$recebimento->observacao_recebimento}}</td>
                                     <td>{{$recebimento->user->name}}</td>
                                     <td>{{mb_substr($recebimento->galaxPayCliente->nome_cliente, 0, 25, 'utf-8')}}</td>
-                                    <td class="text-end decimalBrasileiro2Digitos">+ {{str_replace(' ', ',', str_replace(',', '.', str_replace('.', ' ', $recebimento->valor_recebimento)))}}</td>
+                                    <td class="text-end">+ {{str_replace(' ', ',', str_replace(',', '.', str_replace('.', ' ', $recebimento->valor_recebimento)))}}</td>
                                 </tr>
                             @endforeach
                         @endif
@@ -80,6 +81,7 @@
                                 <tr class="text-danger">                                   
                                     <input type="hidden" class="valorDespesa decimalBrasileiro2Digitos" id="valorDespesa" name="valorDespesa" value="{{$despesa->valor_despesa}}">
                                     <td>{{date('d/m/Y H:i', strtotime($despesa->data_despesa))}}</td>
+                                    <td>{{$despesa->contaDespesa->descricao_conta}}</td>
                                     <td>{{$despesa->observacao_despesa}}</td>
                                     <td>{{$despesa->user->name}}</td>
                                     <td></td>
@@ -91,7 +93,6 @@
                     </table>
                 </div>
             </div>
-            @include('components.modals.geraRecebimento')
             @include('components.modals.geraDespesa')
         @endif   
     </div>

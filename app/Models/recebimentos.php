@@ -20,4 +20,9 @@ class recebimentos extends Model
     {
         return $this->belongsTo(clientes_galaxpay::class, 'cliente_galaxpay_recebimento', 'id');
     }
+
+    function contaRecebimento()
+    {
+        return $this->belongsTo(contas::class, 'conta_recebimento', 'id');
+    }
 }

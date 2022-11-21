@@ -28,7 +28,7 @@
                                     <p> {{$galaxPayCliente->nome_cliente}} </p>
                                 </td>
                                 <td class='border'>
-                                    <p class="cnpjMask" > {{$galaxPayCliente->cpf_cnpj_cliente}} </p>
+                                    <p class="cnpjMask"> {{$galaxPayCliente->cpf_cnpj_cliente}} </p>
                                 </td>
                                 <td class='border'>
                                     <p class="telefoneMask"> {{$galaxPayCliente->telefone_cliente_1}} </p>
@@ -51,10 +51,11 @@
                                     @endswitch
                                 </td>
                                 <td align="right" class="bg-purple">
-                                    <a href="{{route('clientes.gerarCartaoCliente', ['idGalaxPayCliente' => $galaxPayCliente->id])}}" class="btn btn-info text-white" target="__blank"><i class="fa-solid fa-print"></i></i></a>
-                                    <a href="{{route('clientes.informacoesCliente', [$galaxPayCliente])}}" class="btn btn-warning text-white"><i class="fa-solid fa-eye"></i></a>
+                                    <a  class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#modalGeraFinanceiroCartao{{$galaxPayCliente->id}}"><i class="fa-solid fa-print"></i></i></a>
+                                    <a href="{{route('clientes.dados', [$galaxPayCliente])}}" class="btn btn-warning text-white"><i class="fa-solid fa-eye"></i></a>
                                 </td>
                             </tr>
+                            @include('components.modals.gerarFinanceiroCartao')
                         @endforeach
                     </tbody>
                 </table>
@@ -62,3 +63,4 @@
         </div>
     </div>
 @endif
+

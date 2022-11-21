@@ -7,9 +7,9 @@
             </div>
             <div class="modal-body">
                 @can('isAdmin')
-                    <form action="{{route('editPassword', $user->id)}}" method="POST" id="IdFormModal">
+                    <form action="{{route('editPassword', Auth::user())}}" method="POST" id="IdFormModal">
                 @elsecan('isPartner')
-                   <form action="{{route('empresasParceiras.editPassword', $user->id)}}" method="POST" id="IdFormModal">
+                   <form action="{{route('empresasParceiras.editPassword', Auth::user())}}" method="POST" id="IdFormModal">
                 @endcan
                     @method('PUT')
                     @csrf

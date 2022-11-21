@@ -37,6 +37,11 @@ class clientes_galaxpay extends Model
 
     function contratos()
     {
-        return $this->hasOne(contratos::class, 'cliente_galaxpay');
+        return $this->hasMany(contratos::class, 'cliente_galaxpay');
+    }
+
+    function transacoesAtivas()
+    {
+        return $this->hasMany(transacoes_galaxpay::class, 'cliente_galaxpay')->where('status_transacao', '=', ['notSend', 'pendingBoleto']);
     }
 }

@@ -18,7 +18,6 @@
                     </thead>
                     <tbody>
                         @foreach ($contas as $conta)
-                            <a href="{{route('financeiro.visualizarConta', $conta)}}">
                                 <tr>
                                     <td class='border'>
                                         {{$conta->id}}
@@ -33,7 +32,6 @@
                                         <a href="{{route('financeiro.visualizarConta', $conta)}}" class="btn btn-warning text-white"><i class="fa-solid fa-eye"></i></a>
                                     </td>
                                 </tr>
-                            </a>
                         @endforeach
                     </tbody>
                 </table>

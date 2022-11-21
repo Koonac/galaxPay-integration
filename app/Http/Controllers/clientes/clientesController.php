@@ -4,6 +4,7 @@ namespace App\Http\Controllers\clientes;
 
 use App\Http\Controllers\api\galaxPayControllerAPI;
 use App\Http\Controllers\Controller;
+use App\Models\caixa_financeiro;
 use App\Models\campo_personalizado_cliente_galaxpay;
 use App\Models\clientes_dependentes_galaxpay;
 use App\Models\clientes_galaxpay;
@@ -12,6 +13,7 @@ use App\Models\logs_alteracao;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Exception;
 use Nette\Utils\Json;
 
 class clientesController extends Controller
@@ -41,9 +43,19 @@ class clientesController extends Controller
         }
     }
 
-    public function informacoesClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
+    public function dadosClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
     {
-        return view('clientes.informacoesCliente', ['galaxPayCliente' => $clienteGalaxPay]);
+        return view('clientes.dadosCliente', ['galaxPayCliente' => $clienteGalaxPay]);
+    }
+
+    public function contratosClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
+    {
+        return view('clientes.contratosCliente', ['galaxPayCliente' => $clienteGalaxPay]);
+    }
+
+    public function transacoesClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
+    {
+        return view('clientes.transacoesCliente', ['galaxPayCliente' => $clienteGalaxPay]);
     }
 
     public function criarClienteGalaxPay(Request $request)
@@ -209,54 +221,75 @@ class clientesController extends Controller
         return $pdf->stream();
     }
 
-    public function gerarCartaoCliente(Request $request)
+    public function gerarCartaoCliente(Request $request, clientes_galaxpay $clienteGalaxpay)
     {
-        // CAPTURANDO CLIENTE COM BASE NO ID FORNECIDO PELA ROTA
-        $clienteGalaxpay = clientes_galaxpay::find($request->idGalaxPayCliente);
-        $clienteGalaxpay->clientesDependentesGalaxpay;
+        try {
+            // ANALISANDO SE EXISTE CODIGOS DE CLIENTE PARA IMPRESSÃO
+            if (!empty($clienteGalaxpay)) {
 
-        // ANALISANDO SE EXISTE CODIGOS DE CLIENTE PARA IMPRESSÃO
-        if (!empty($clienteGalaxpay)) {
-
-            // MONTANDO CARD DE IMPRESSÃO DO CLIENTE
-            $cardImpressao['nomeCliente'] = $clienteGalaxpay->nome_cliente;
-            $cardImpressao['matriculaCliente'] = $clienteGalaxpay->matricula;
-            $cardImpressao['dataEmissão'] = date('Y-m-d H:i:s');
-            $dataNascimentoClienteGalaxpay = $clienteGalaxpay->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_DATA_NACIMENTO')->first();
-            if (!empty($dataNascimentoClienteGalaxpa)) {
-                $cardImpressao['dataNascimentoCliente'] = $dataNascimentoClienteGalaxpay->valor_campo_personalizado;
-            } else {
-                $cardImpressao['dataNascimentoCliente'] = date('Y-m-d');
-            }
-            // ADICIONANDO AO ARRAY DE IMPRESSAO
-            $data['cardImpressao'][] = $cardImpressao;
-        }
-
-        // ANALISANDO SE EXISTE DEPENDENTES
-        if (count($clienteGalaxpay->clientesDependentesGalaxpay) > 0) {
-            // PERCORRENDO LAÇO DE DEPENDENTES PARA IMPRESSÃO
-            foreach ($clienteGalaxpay->clientesDependentesGalaxpay as $clienteDependenteGalaxpay) {
-                // MONTANDO CARD DE IMPRESSÃO DO DEPENDENTE
-                $cardImpressao['nomeCliente'] = $clienteDependenteGalaxpay->nome_cliente_dependente;
-                $cardImpressao['matriculaCliente'] = $clienteDependenteGalaxpay->matricula_cliente_dependente;
+                // MONTANDO CARD DE IMPRESSÃO DO CLIENTE
+                $cardImpressao['nomeCliente'] = $clienteGalaxpay->nome_cliente;
+                $cardImpressao['matriculaCliente'] = $clienteGalaxpay->matricula;
                 $cardImpressao['dataEmissão'] = date('Y-m-d H:i:s');
-                $cardImpressao['dataNascimentoCliente'] = $clienteDependenteGalaxpay->nascimento_cliente_dependente;
-
+                $dataNascimentoClienteGalaxpay = $clienteGalaxpay->campoPersonalizadoClienteGalaxpay()->where('nome_campo_personalizado', 'CP_DATA_NACIMENTO')->first();
+                if (!empty($dataNascimentoClienteGalaxpa)) {
+                    $cardImpressao['dataNascimentoCliente'] = $dataNascimentoClienteGalaxpay->valor_campo_personalizado;
+                } else {
+                    $cardImpressao['dataNascimentoCliente'] = date('Y-m-d');
+                }
                 // ADICIONANDO AO ARRAY DE IMPRESSAO
                 $data['cardImpressao'][] = $cardImpressao;
             }
+
+            // ANALISANDO SE EXISTE DEPENDENTES
+            if (count($clienteGalaxpay->clientesDependentesGalaxpay) > 0) {
+                // PERCORRENDO LAÇO DE DEPENDENTES PARA IMPRESSÃO
+                foreach ($clienteGalaxpay->clientesDependentesGalaxpay as $clienteDependenteGalaxpay) {
+                    // MONTANDO CARD DE IMPRESSÃO DO DEPENDENTE
+                    $cardImpressao['nomeCliente'] = $clienteDependenteGalaxpay->nome_cliente_dependente;
+                    $cardImpressao['matriculaCliente'] = $clienteDependenteGalaxpay->matricula_cliente_dependente;
+                    $cardImpressao['dataEmissão'] = date('Y-m-d H:i:s');
+                    $cardImpressao['dataNascimentoCliente'] = $clienteDependenteGalaxpay->nascimento_cliente_dependente;
+
+                    // ADICIONANDO AO ARRAY DE IMPRESSAO
+                    $data['cardImpressao'][] = $cardImpressao;
+                }
+            }
+
+            // CAPTURANDO TOTAL DE REGISTROS PARA IMPRESSÃO
+            $data['qtdImpressao'] = count($data['cardImpressao']);
+
+            // ANALISANDO SE DEVE GERAR FINANCEIRO
+            if ($request->gerarFinanceiro == 'SIM') {
+                $caixaAberto = caixa_financeiro::where('status_caixa', 'A')->first();
+
+                if (empty($caixaAberto)) {
+                    throw new Exception('Não há caixa aberto para geração de financeiro.');
+                } else {
+                    $rotaAdcionarRecebimento = redirect()->route('caixa.adicionarRecebimento.cartao', [
+                        'caixaFinanceiro' => $caixaAberto,
+                        'valorRecebimento' => $request->user()->parametros->valor_card,
+                        'observacaoRecebimento' => 'Cartão gerado.',
+                        'galaxPayCliente' => $clienteGalaxpay,
+                        'contaRecebimento' => $request->user()->parametros->conta_recebimento_padrao,
+                        'dados' => $data
+                    ]);
+                    // RETORNANDO ROTA
+                    return $rotaAdcionarRecebimento;
+                }
+            } else if ($request->gerarFinanceiro == 'NAO') {
+                // DEFININDO VARIAVEIS PARA SER PASSADAS PARA O PDF
+                $pdf = PDF::loadView('clientes.layoutCards.layoutCardSolidariedadeVerso', $data);
+                $pdf->setPaper('catalog #10 1/2 envelope', 'landscape');
+                $pdf->setOption(['defaultFont' => 'serif']);
+
+                return $pdf->stream();
+            } else {
+                throw new Exception('Parametros não identificados.');
+            }
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors(['Ocorreu um erro inesperado ao gerar cartão do cliente. ' . "\n" . $e->getMessage()]);
         }
-
-        // CAPTURANDO TOTAL DE REGISTROS PARA IMPRESSÃO
-        $data['qtdImpressao'] = count($data['cardImpressao']);
-
-        // DEFININDO VARIAVEIS PARA SER PASSADAS PARA O PDF
-        $pdf = PDF::loadView('clientes.layoutCards.layoutCardSolidariedadeVerso', $data);
-        $pdf->setPaper('catalog #10 1/2 envelope', 'landscape');
-        $pdf->setOption(['defaultFont' => 'serif']);
-
-        // RETORNANDO PDF
-        return $pdf->stream();
     }
 
     function trataCpfCnpj($valor)

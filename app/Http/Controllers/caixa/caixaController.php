@@ -8,6 +8,7 @@ use App\Models\clientes_galaxpay;
 use App\Models\contas;
 use App\Models\despesas;
 use App\Models\recebimentos;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
 use Symfony\Component\VarDumper\VarDumper;
 
@@ -96,6 +97,7 @@ class caixaController extends Controller
         $recebimentos->user_create              = $request->user()->id;
         $recebimentos->conta_recebimento        = $request->contaRecebimento;
         $recebimentos->cliente_galaxpay_recebimento        = $request->galaxPayCliente;
+
         $valorAtualCaixa = str_replace(',', '', $caixaFinanceiro->valor_caixa);
         $valorRecebimento = str_replace(',', '', $valorRecebimento);
         $valorCaixa = number_format(($valorAtualCaixa + $valorRecebimento), 2, '.', ',');
@@ -117,8 +119,17 @@ class caixaController extends Controller
             $conta->save();
         }
 
-        // REDIRECIONANDO PARA PAGINA ANTERIOR
-        return redirect()->back()->with(['SUCCESS' => ['Recebimento adicionado com sucesso ao caixa']]);
+        if ($request->dados) {
+            // DEFININDO VARIAVEIS PARA SER PASSADAS PARA O PDF
+            $pdf = PDF::loadView('clientes.layoutCards.layoutCardSolidariedadeVerso', $request->dados);
+            $pdf->setPaper('catalog #10 1/2 envelope', 'landscape');
+            $pdf->setOption(['defaultFont' => 'serif']);
+
+            return $pdf->stream();
+        } else {
+            // REDIRECIONANDO PARA PAGINA ANTERIOR
+            return redirect()->back()->with(['SUCCESS' => ['Recebimento adicionado com sucesso ao caixa']]);
+        }
     }
 
     public function adicionarDespesa(Request $request, caixa_financeiro $caixaFinanceiro)

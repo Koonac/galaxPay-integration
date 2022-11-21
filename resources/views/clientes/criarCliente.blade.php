@@ -1,9 +1,10 @@
 <x-layout.layoutNavBar>
+    <script type="text/javascript" src="{{asset('js/clientes/clientes.js')}}"></script>
+
     <div class="container-fluid bg-light shadow border rounded p-4">
         {{-- INCLUINDO COMPONENTE DE ALERT MENSAGENS --}}
         <x-messages.returnMessages>
         </x-messages.returnMessages>
-        
         <form action="{{route('galaxPay.criarClienteGalaxPay')}}" id="formCriarClienteGalaxPay" method="POST">
             @csrf
             <div class="row py-2">
@@ -62,21 +63,24 @@
                     </div>
                 </div>
                 <div class="row py-2">
-                    <div class="col-md-12">
-                        <h5>Dependentes:</h5>
-                        <hr>
-                        <div class="row py-1">
+                    <h5>Dependentes:</h5>
+                    <hr>
+                    <div class="col-md-12" id="divDependentes">
+                        <div class="row py-1 linhaDependente" id='linhaDependente'>
                             <div class="col-md-4">
-                                <label class="fw-bold" for="nomeDependente1">Nome dependente</label>
-                                <input class="form-control" name="nomeDependente1" id="nomeDependente1" value="{{old('nomeDependente1')}}">
+                                <label class="fw-bold" for="nomeDependente">Nome dependente</label>
+                                <input class="form-control" name="nomeDependente[]" id="nomeDependente" value="">
                             </div>
                             <div class="col-md-4">
-                                <label class="fw-bold" for="cpfDependente1">CPF dependente</label>
-                                <input class="form-control" name="cpfDependente1" id="cpfDependente1" value="{{old('cpfDependente1')}}">
+                                <label class="fw-bold" for="cpfDependente">CPF dependente</label>
+                                <input class="form-control cpfMask" name="cpfDependente[]" id="cpfDependente" value="">
                             </div>
-                            <div class="col-md-4">
-                                <label class="fw-bold" for="nascimentoDependente1">Data de nascimento</label>
-                                <input class="form-control" name="nascimentoDependente1" id="nascimentoDependente1" value="{{old('nascimentoDependente1')}}">
+                            <div class="col-md-3">
+                                <label class="fw-bold" for="nascimentoDependente">Data de nascimento</label>
+                                <input class="form-control dataBrasileiraDDMMYYYY" name="nascimentoDependente[]" id="nascimentoDependente" value="">
+                            </div>
+                            <div class="col-md-1 d-flex  align-items-end">
+                                <button type="button" class="btn btn-success btn-lg fa-solid fa-plus" id="btnAdicionaNovoDependente"></button>                                
                             </div>
                         </div>
                     </div>

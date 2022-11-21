@@ -35,13 +35,15 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\home')->group(funct
 // ROTAS DE CLIENTES
 Route::middleware(['auth', 'acessoFuncionario'])->namespace('App\Http\Controllers\clientes')->prefix('clientes')->group(function () {
     Route::get('', 'clientesController')->name('clientes');
-    Route::get('/informacoesCliente/{clienteGalaxPay}', 'clientesController@informacoesClienteGalaxPay')->name('clientes.informacoesCliente');
+    Route::get('/{clienteGalaxPay}/dados', 'clientesController@dadosClienteGalaxPay')->name('clientes.dados');
+    Route::get('/{clienteGalaxPay}/contratos', 'clientesController@contratosClienteGalaxPay')->name('clientes.contratos');
+    Route::get('/{clienteGalaxPay}/transacoes', 'clientesController@transacoesClienteGalaxPay')->name('clientes.transacoes');
     Route::get('/criar', 'clientesController@criarClienteGalaxPay')->name('clientes.criarClienteGalaxPay');
     Route::put('/editar/{clienteGalaxPay}', 'clientesController@editClienteGalaxPay')->name('clientes.editClienteGalaxPay');
     Route::get('/pesquisa/{pesquisaCliente}', 'clientesController@pesquisaCliente')->name('pesquisaCliente');
     Route::get('/pesquisa/{opcaoPesquisa}/{pesquisaCliente}', 'clientesController@pesquisaClienteDependente')->name('clientes.pesquisaClienteDependente');
     Route::get('/gerarCartaoJs', 'clientesController@gerarCartaoJs')->name('clientes.gerarCartaoJs');
-    Route::get('/gerarCartaoCliente', 'clientesController@gerarCartaoCliente')->name('clientes.gerarCartaoCliente');
+    Route::post('/gerarCartaoCliente/{clienteGalaxpay}', 'clientesController@gerarCartaoCliente')->name('clientes.gerarCartaoCliente');
 });
 
 // ROTAS DE EMPRESAS
@@ -61,6 +63,7 @@ Route::middleware(['auth', 'acessoFuncionario'])->namespace('App\Http\Controller
     Route::post('/abrirCaixa', 'caixaController@abrirCaixa')->name('caixa.abrirCaixa');
     Route::post('/fecharCaixa/{caixaFinanceiro}', 'caixaController@fecharCaixa')->name('caixa.fecharCaixa');
     Route::post('/adicionarRecebimento/{caixaFinanceiro}', 'caixaController@adicionarRecebimento')->name('caixa.adicionarRecebimento');
+    Route::get('/adicionarRecebimento/{caixaFinanceiro}', 'caixaController@adicionarRecebimento')->name('caixa.adicionarRecebimento.cartao');
     Route::post('/adicionarDespesa/{caixaFinanceiro}', 'caixaController@adicionarDespesa')->name('caixa.adicionarDespesa');
 });
 
@@ -86,7 +89,8 @@ Route::middleware(['auth', 'acessoFuncionario'])->namespace('App\Http\Controller
 
 // ROTAS DE CONFIGURAÇÕES DO USUARIO LOGADO
 Route::middleware(['auth'])->namespace('App\Http\Controllers\parametrosUser')->group(function () {
-    Route::get('/perfil', 'perfilController')->name('perfil');
+    Route::get('/perfil/usuario', 'perfilController')->name('perfil');
+    Route::get('/perfil/parametros', 'perfilController@perfilParametros')->name('perfil.parametros');
     Route::put('/perfil/alterarSenha/{idUserEdit}', 'perfilController@editPassword')->name('editPassword');
     Route::put('/perfil/atualizaUsuario/{userEdit}', 'perfilController@editUser')->name('editUser');
     Route::delete('/perfil/delete/{idUserDelete}', 'perfilController@deleteUser')->name('deleteUser');
@@ -96,10 +100,19 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\parametrosUser')->g
 Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->prefix('galaxPay')->group(function () {
     Route::get('', 'galaxPayControllerAPI')->middleware(['acessoFuncionario'])->name('galaxPay');
     Route::get('/generateAcessToken', 'galaxPayControllerAPI@generateAcessToken')->middleware(['acessoFuncionario'])->name('galaxPay.accessToken');
+    // CLIENTES
     Route::get('/importaClientesGalaxPay', 'galaxPayControllerAPI@importaClientesGalaxPay')->middleware(['acessoFuncionario'])->name('galaxPay.clientes');
-    Route::get('/importaContratoCliente/{clienteGalaxpay}', 'galaxPayControllerAPI@importaContratoCliente')->middleware(['acessoFuncionario'])->name('galaxPay.importaContratoCliente');
     Route::post('/criarClienteGalaxPay', 'galaxPayControllerAPI@criarClienteGalaxPay')->name('galaxPay.criarClienteGalaxPay');
     Route::get('/atualizaClienteGalaxPay/{clienteGalaxpay}', 'galaxPayControllerAPI@atualizaClienteGalaxPay')->name('galaxPay.atualiza');
     Route::get('/pesquisaCliente/{searchOption}/{search}', 'galaxPayControllerAPI@pesquisaClienteGalaxPay')->middleware(['acessoFuncionario'])->name('galaxPay.pesquisaClientes');
     Route::get('/editar/{clienteGalaxPay}', 'galaxPayControllerAPI@editarClienteGalaxPay')->middleware(['acessoFuncionario'])->name('galaxPay.clientes');
+    // CONTRATOS E TRANSAÇÕES
+    Route::get('/importaContratoCliente/{clienteGalaxpay}', 'galaxPayControllerAPI@importaContratoPorCliente')->middleware(['acessoFuncionario'])->name('galaxPay.importaContratoCliente');
+    Route::get('/importaTransacoes/{clienteGalaxpay}', 'galaxPayControllerAPI@importaTransacoesPorCliente')->middleware(['acessoFuncionario'])->name('galaxPay.importaTransacoesPorCliente');
+    Route::get('/receber/{transacao}', 'galaxPayControllerAPI@receberTransacoesPorTransacao')->middleware(['acessoFuncionario'])->name('galaxPay.receberTransacoesPorTransacao');
+});
+
+// ROTAS DE WEBHOOK
+Route::namespace('App\Http\Controllers\api')->group(function () {
+    Route::post('/webhook', 'webhookController@webhook');
 });

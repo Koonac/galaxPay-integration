@@ -15,18 +15,18 @@ class CreateContratosTable extends Migration
     {
         Schema::create('contratos', function (Blueprint $table) {
             $table->id();
+            $table->timestamps();
             $table->unsignedBigInteger('cliente_galaxpay')->nullable();
-            $table->string('codigo_contrato');
-            $table->string('plano_codigo_contrato');
+            $table->string('codigo_contrato_galaxpay');
+            $table->string('plano_codigo_contrato')->nullable();
             $table->string('valor_contrato');
-            $table->string('quantidade_contrato');
-            $table->string('periodo_pagamento');
+            $table->string('duracao_contrato')->nullable();
+            $table->string('periodicidade_pagamento');
             $table->date('primeira_data_pagamento')->nullable();
             $table->string('forma_pagamento')->nullable();
             $table->string('link_pagamento')->nullable();
             $table->string('informacao_adicional')->nullable();
             $table->string('status');
-            $table->timestamps();
             $table->foreign('cliente_galaxpay')->references('id')->on('clientes_galaxpay');
         });
     }

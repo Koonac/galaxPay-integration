@@ -59,7 +59,7 @@
 
                             {{-- MODAL CONFIRMA EXCLUSÃO --}}
                             <div class="modal fade" id="modalConfirmacaoExclusaoEmpresa{{$empresaParceira->id}}" tabindex="-1" aria-labelledby="formModalTitle" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h5 class="modal-title text-uppercase" id="formModalTitle">Confirmação</h5>

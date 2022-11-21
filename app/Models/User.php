@@ -53,9 +53,19 @@ class User extends Authenticatable
         return $this->hasOne(funcionarios::class, 'user_id');
     }
 
+    function parametros()
+    {
+        return $this->hasOne(parametros_user::class, 'user_id');
+    }
+
     function caixaFinanceiro()
     {
         return $this->hasMany(caixa_financeiro::class, 'id_user_abertura');
+    }
+
+    function caixaAberto()
+    {
+        return $this->hasOne(caixa_financeiro::class, 'id_user_abertura')->where('status_caixa', 'A');
     }
 
     function contas()

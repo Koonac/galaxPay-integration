@@ -16,8 +16,8 @@ class CreateGalaxpayParametrosTable extends Migration
         Schema::create('galaxpay_parametros', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('galax_id');
-            $table->string('galax_hash');
+            $table->string('galax_id')->nullable();
+            $table->string('galax_hash')->nullable();
             $table->string('galax_token')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

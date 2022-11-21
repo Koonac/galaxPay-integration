@@ -15,4 +15,9 @@ class despesas extends Model
     {
         return $this->belongsTo(User::class, 'user_create', 'id');
     }
+
+    function contaDespesa()
+    {
+        return $this->belongsTo(contas::class, 'conta_despesa', 'id');
+    }
 }

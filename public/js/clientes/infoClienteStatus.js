@@ -1,6 +1,5 @@
 $(function () {
 
-
     let verificaMaskCpfCnpj = function (val) {
         return val.replace(/\D/g, '').length === 11 ? '000.000.000-00' : '00.000.000/0000-00';
     }

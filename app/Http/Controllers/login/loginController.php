@@ -4,6 +4,7 @@ namespace App\Http\Controllers\login;
 
 use App\Http\Controllers\Controller;
 use App\Models\galaxpay_parametros;
+use App\Models\parametros_user;
 use App\Models\User;
 use Exception;
 use Illuminate\Auth\Events\PasswordReset;
@@ -63,13 +64,20 @@ class loginController extends Controller
         $user->password = Hash::make($request->passwordLogin);
         $user->role = 'Admin';
 
-        // CRIANDO MODEL DE GALAXPAY PARAMETROS
+        // CRIANDO MODEL
         $galaxpayParametros = new galaxpay_parametros();
-        $galaxpayParametros->user_id = $request->idUserEdit;
-        $galaxpayParametros->save();
+        $parametrosUser = new parametros_user();
+
+        // DEFININDO VALORES DE PARAMETROS DO USUARIO
+        $parametrosUser->valor_card = '9.99';
+        $parametrosUser->valor_cancelamento_contrato = '59.99';
+        $parametrosUser->cobrar_cancelamento_meses = '12';
+        $parametrosUser->quantidade_dependentes_galaxpay = '7';
 
         // SALVANDO DADOS NO BANCO
         $user->save();
+        $user->galaxPayParametros->save($galaxpayParametros);
+        $user->parametros->save($parametrosUser);
 
         return redirect()->route('login')->with('SUCCESS', ['Login cadastrado com sucesso.']);
     }
