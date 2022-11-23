@@ -29,6 +29,7 @@
                 </span> 
             </div>
             <div class="col-md-6 text-end">
+                <a href="{{route('clientes.criarContratoClienteView', $galaxPayCliente)}}" class="btn btn-success"><i class="fa-solid fa-plus"></i> Criar contrato</a>
                 <a href="{{route('galaxPay.importaTransacoesPorCliente', $galaxPayCliente)}}" class="btn btn-success"><i class="fa-solid fa-plus"></i>Importar transações</a>
                 <a href="{{route('galaxPay.importaContratoCliente', $galaxPayCliente)}}" class="btn btn-success"><i class="fa-solid fa-plus"></i>Importar contratos</a>
                 <button type="button" class="btn btn-primary text-white fw-bold" data-bs-toggle="modal" data-bs-target="#modalHistoricoAtendimento">Histórico de atendimento</button>

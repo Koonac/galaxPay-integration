@@ -8,6 +8,7 @@ use App\Models\caixa_financeiro;
 use App\Models\campo_personalizado_cliente_galaxpay;
 use App\Models\clientes_dependentes_galaxpay;
 use App\Models\clientes_galaxpay;
+use App\Models\contratos;
 use App\Models\historico_atendimento_cliente;
 use App\Models\logs_alteracao;
 use App\Models\User;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Exception;
 use Nette\Utils\Json;
+use PhpParser\Node\Expr\Print_;
 
 class clientesController extends Controller
 {
@@ -61,6 +63,63 @@ class clientesController extends Controller
     public function criarClienteGalaxPay(Request $request)
     {
         return view('clientes.criarCliente');
+    }
+
+    public function criarContratoClienteView(Request $request, clientes_galaxpay $clienteGalaxPay)
+    {
+        return view('clientes.criarContrato', ['clienteGalaxPay' => $clienteGalaxPay]);
+    }
+
+    public function criarContratoClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)
+    {
+        try {
+            // TRATANDO VARIAVEIS
+            $valorContrato = str_replace(',', '.', str_replace('.', '', $request->valorContrato));
+            if (empty($valorContrato)) $valorContrato = 0;
+            $valorContrato = number_format($valorContrato, 2, '.', ',');
+            $valorDesconto = str_replace(',', '.', str_replace('.', '', $request->valorDesconto));
+            if (empty($valorDesconto)) $valorDesconto = 0;
+            $valorDesconto = number_format($valorDesconto, 2, '.', ',');
+            $informacaoAdicional = trim($request->informacaoAdicional);
+            $primeiraDataPagamento = implode('-', array_reverse(explode('/', $request->primeiraDataPagamento)));
+            $duracaoContrato = $request->duracaoContrato;
+            if (empty($duracaoContrato)) $duracaoContrato = 0;
+            $aplicarDesconto = $request->aplicarDesconto;
+            if (empty($aplicarDesconto)) $aplicarDesconto = 'N';
+
+            // INICIALIZANDO MODEL
+            $contrato = new contratos;
+
+            // ATRIBUINDO VALORES AS VARIÁVEIS
+            $contrato->cliente_galaxpay = $clienteGalaxPay->id;
+            $contrato->plano_codigo_contrato = $request->planoCodigoContrato;
+            $contrato->valor_contrato = $valorContrato;
+            $contrato->duracao_contrato = $duracaoContrato;
+            $contrato->periodicidade_pagamento = $request->periodicidadePagamento;
+            $contrato->primeira_data_pagamento = $primeiraDataPagamento;
+            $contrato->forma_pagamento = $request->formaPagamento;
+            $contrato->informacao_adicional = $informacaoAdicional;
+            $contrato->status = 'sending api';
+
+            $contrato->percentual_multa = $request->percentualMulta;
+            $contrato->percentual_juros = $request->percentualJuros;
+            $contrato->observacao_boleto = $request->observacaoBoleto;
+            $contrato->qtde_pagamento_pos_vencimento = $request->qtdePagamentoPosVencimento;
+            $contrato->aplicar_desconto = $aplicarDesconto;
+            $contrato->tipo_desconto = $request->tipoDesconto;
+            $contrato->qtde_dias_validade_desconto = $request->qtdeDiasValidadeDesconto;
+            $contrato->valor_desconto = $valorDesconto;
+
+            // SALVANDO NO BANCO DE DADOS
+            $contrato->save();
+
+            // CAHMANDO ROTA PARA CADASTRO A API
+            return redirect()->route('galaxPay.criarContrato', $contrato);
+        } catch (Exception $e) {
+            $retorno['statusRetorno'] = 'ERROR';
+            return redirect()->back()->withInput()->withErrors(['Ocorreu um erro inesperado. Mensagem: ' . $e->getMessage()]);
+        }
+        ddd($request->all());
     }
 
     public function editClienteGalaxPay(Request $request, clientes_galaxpay $clienteGalaxPay)

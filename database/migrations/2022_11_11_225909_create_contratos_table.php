@@ -17,12 +17,12 @@ class CreateContratosTable extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('cliente_galaxpay')->nullable();
-            $table->string('codigo_contrato_galaxpay');
+            $table->string('codigo_contrato_galaxpay')->nullable();
             $table->string('plano_codigo_contrato')->nullable();
             $table->string('valor_contrato');
-            $table->string('duracao_contrato')->nullable();
+            $table->string('duracao_contrato');
             $table->string('periodicidade_pagamento');
-            $table->date('primeira_data_pagamento')->nullable();
+            $table->date('primeira_data_pagamento');
             $table->string('forma_pagamento')->nullable();
             $table->string('link_pagamento')->nullable();
             $table->string('informacao_adicional')->nullable();

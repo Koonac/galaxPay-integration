@@ -11,6 +11,14 @@
                       </select>
                     <input type="text" class="form-control w-50" id='inputPesquisaCliente' placeholder="Pesquisa por cliente">
                     <button type="button" id='btnImportarClienteGalaxPay' class="btn btn-info text-white fw-bold">Importar</button>
+                    <button type="button" class="btn btn-info text-white fw-bold dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Opções extras</span>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a href="{{route('clientes.criarClienteGalaxPay')}}" class="dropdown-item"><i class="fa-solid fa-plus"></i> Criar cliente</a>
+                        </li>
+                      </ul>
                 </div>
             </div>
         </div>

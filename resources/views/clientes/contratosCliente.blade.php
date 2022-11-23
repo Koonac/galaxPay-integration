@@ -13,7 +13,7 @@
 
 @if (count($galaxPayCliente->contratos) <= 0)
     <div class="alert alert-warning shadow my-4">
-        Nenhum contrato importado.
+        Nenhum contrato encontrado.
     </div>
 @else
     <div class="row p-4">

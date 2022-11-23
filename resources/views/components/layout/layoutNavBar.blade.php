@@ -13,6 +13,7 @@
     {{-- IMPORTANDO SCRIPTS --}}
     <script type="text/javascript" src="{{asset('js/jquery.js')}}"></script>
     <script type="text/javascript" src="{{asset('js/bootstrap.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/bootstrap-datepicker/js/bootstrap-datepicker.min.js')}}"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/jq-3.6.0/dt-1.12.1/r-2.3.0/datatables.min.js"></script>
     <script type="text/javascript" src="{{asset('js/jqueryMask.js')}}"></script>
     <script type="text/javascript" src="{{asset('js/myScript.js')}}"></script>

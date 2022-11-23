@@ -13,6 +13,7 @@ class clientes_galaxpay extends Model
      *
      * @var string
      */
+
     protected $table = 'clientes_galaxpay';
 
     function enderecoClienteGalaxpay()
@@ -37,7 +38,7 @@ class clientes_galaxpay extends Model
 
     function contratos()
     {
-        return $this->hasMany(contratos::class, 'cliente_galaxpay');
+        return $this->hasMany(contratos::class, 'cliente_galaxpay')->where('status', 'active');
     }
 
     function transacoesAtivas()

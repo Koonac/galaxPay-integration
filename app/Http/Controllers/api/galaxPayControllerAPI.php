@@ -931,6 +931,91 @@ class galaxPayControllerAPI extends Controller
     /******************/
     /**** CONTRATO ****/
     /******************/
+    public function criarContratoGalaxPay(Request $request, contratos $contrato)
+    {
+        try {
+            // INICILIZANDO MODEL
+            $clienteGalaxpay = clientes_galaxpay::find($contrato->cliente_galaxpay);
+            if (empty($clienteGalaxpay)) throw new Exception('Cliente não encontrado.');
+
+
+            // ANALISANDO SE DEVE MONTAR ARRAY DE JUROS
+            if ($contrato->forma_pagamento == 'boleto') {
+                // ANALISANDO SE DEVE APLICAR DESCONTO DE CONTRATO
+                if ($contrato->aplicar_desconto == 'S') {
+                    // MONTANDO ARRAY DE DESCONTO
+                    $Discount = [
+                        'qtdDaysBeforePayDay' => $contrato->tipo_desconto,
+                        'type' => $contrato->qtde_dias_validade_desconto,
+                        'value' => $contrato->valor_desconto,
+                    ];
+                }
+
+                // MONTANDO ARRAY DE BOLETO
+                $PaymentMethodBoleto = [
+                    'fine' => $contrato->percentual_multa,
+                    'interest' => $contrato->percentual_juros,
+                    'instructions' => $contrato->observacao_boleto,
+                    'deadlineDays' => $contrato->qtde_pagamento_pos_vencimento,
+                    'Discount' => $Discount
+                ];
+            }
+
+            // MONTANDO ARRAY DE CLIENTE
+            $customer = [
+                'galaxPayId' => $clienteGalaxpay->codigo_cliente_galaxpay
+            ];
+
+            // MONTANDO ARRAY DE DATA
+            $data = [
+                'myId' => 'solicardSys-' . $contrato->id,
+                'value' => intval(str_replace(',', '', str_replace('.', '', $contrato->valor_contrato))),
+                'quantity' => $contrato->duracao_contrato,
+                'periodicity' => $contrato->periodicidade_pagamento,
+                'firstPayDayDate' => $contrato->primeira_data_pagamento,
+                'additionalInfo' => $contrato->informacao_adicional,
+                'mainPaymentMethodId' => $contrato->forma_pagamento,
+                'Customer' => $customer,
+                'PaymentMethodBoleto' => $PaymentMethodBoleto,
+                // 'PaymentMethodCreditCard' => $contrato->forma_pagamento,
+            ];
+
+            // CAPTURANDO ACCESS TOKEN
+            $generateAcessToken = galaxPayControllerAPI::generateAcessToken($request);
+            // ANALISANDO STATUS DE RETORNO DA FUNÇÃO
+            if ($generateAcessToken['statusRetorno'] != 'SUCCESS') {
+                // RETORNANDO ERRO
+                throw new Exception($generateAcessToken['msgErro']);
+            }
+            // INICIALIZANDO VARIAVEIS 
+            $accessToken                = $generateAcessToken['access_token'];
+
+            // MONTANDO CORPO PARA ENVIO DA API
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer $accessToken",
+                'Content-Type' => 'application/json'
+            ])->post("https://api.sandbox.cloud.galaxpay.com.br/v2/subscriptions/", $data);
+
+            // CAPTURANDO RESPOSTA DA API
+            $response = json_decode($response);
+
+            // ANALISANDO RESPOSTA DE ERRO
+            if (!empty($response->error)) {
+                // REDIRECIONANDO COM ERRO
+                throw new Exception($response->error->message . " [ " .  json_encode($response) . " ]");
+            } else {
+                $contrato->codigo_contrato_galaxpay = $response->Subscription->galaxPayId;
+                $contrato->status = $response->Subscription->status;
+                $contrato->link_pagamento = $response->Subscription->paymentLink;
+                $contrato->save();
+                return redirect()->route('galaxPay.importaTransacoesPorContrato', ['contrato' => $contrato, 'clienteGalaxpay' => $clienteGalaxpay]);
+            }
+        } catch (Exception $e) {
+            $retorno['statusRetorno'] = 'ERROR';
+            return redirect()->back()->withInput()->withErrors(['Ocorreu um erro inesperado. Mensagem: ' . $e->getMessage()]);
+        }
+    }
+
     public function importaContratoPorCliente(Request $request, clientes_galaxpay $clienteGalaxpay)
     {
         try {
@@ -1084,12 +1169,23 @@ class galaxPayControllerAPI extends Controller
                 throw new Exception($generateAcessToken['msgErro']);
             }
             $accessToken = $generateAcessToken['access_token'];
+            $codigoContratoGalaxpay = $contrato->codigo_contrato_galaxpay;
+
+            // ANALISANDO SE EXISTE CODIGO DE CONTRATO GALAXPAY
+            if (empty($codigoContratoGalaxpay)) {
+                // ANALISANDO REDIRECIONAMENTO DE ROTA
+                if (empty($request->clienteGalaxpay)) {
+                    return redirect()->back()->with(['WARNING' => ['Código contrato Galaxpay não encontrado.']]);
+                } else {
+                    return redirect()->route('clientes.contratos', $request->clienteGalaxpay)->with(['WARNING' => ['Código contrato Galaxpay não encontrado.']]);
+                }
+            }
 
             // MONTANDO CORPO PARA ENVIO DA API
             $response = Http::withHeaders([
                 'Authorization' => "Bearer $accessToken",
                 'Content-Type' => 'application/json'
-            ])->get("https://api.sandbox.cloud.galaxpay.com.br/v2/transactions?subscriptionGalaxPayIds=" . $contrato->codigo_contrato_galaxpay . "&status=pendingBoleto,pendingPix,notSend&startAt=0&limit=100&order=payday.asc");
+            ])->get("https://api.sandbox.cloud.galaxpay.com.br/v2/transactions?subscriptionGalaxPayIds=" . $codigoContratoGalaxpay . "&status=pendingBoleto,pendingPix,notSend&startAt=0&limit=100&order=payday.asc");
 
             // CAPTURANDO RESPOSTA DA API
             $response = json_decode($response);
@@ -1146,7 +1242,12 @@ class galaxPayControllerAPI extends Controller
                 }
             }
 
-            return redirect()->back()->with(['SUCCESS' => ['Sucesso ao importar transações Galax Pay.']]);
+            // ANALISANDO REDIRECIONAMENTO DE ROTA
+            if (empty($request->clienteGalaxpay)) {
+                return redirect()->back()->with(['SUCCESS' => ['Sucesso ao importar transações Galaxpay.']]);
+            } else {
+                return redirect()->route('clientes.contratos', $request->clienteGalaxpay)->with(['SUCCESS' => ['Sucesso ao criar contrato e transações Galaxpay.']]);
+            }
         } catch (Exception $e) {
             $retorno['statusRetorno'] = 'ERROR';
             return redirect()->back()->withInput()->withErrors(['Ocorreu um erro inesperado. Mensagem: ' . $e->getMessage()]);
@@ -1165,7 +1266,7 @@ class galaxPayControllerAPI extends Controller
                 // PERCORRENDO LAÇO
                 foreach ($clienteGalaxpay->contratos as $contratoCliente) {
                     // INICIALIZANDO VARIÁVEIS
-                    $codigoContratosGalaxpay .= $contratoCliente->codigo_contrato_galaxpay . ',';
+                    if (!empty($contratoCliente->codigo_contrato_galaxpay)) $codigoContratosGalaxpay .= $contratoCliente->codigo_contrato_galaxpay . ',';
                 }
 
                 // CHAMANDO FUNÇÃO DE TOKEN
