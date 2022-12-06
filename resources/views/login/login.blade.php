@@ -20,8 +20,8 @@
             <div class="col-md-4 border rounded bg-light shadow p-4">
                 <div class="row py-2">
                     <div class="col-12">
-                        <h3>Bem-vindo</h3>
-                        <h5>Acesso ao painel administrativo</h5>
+                        {{-- <h3>Bem-vindo</h3> --}}
+                        {{-- <h5>Acesso ao painel administrativo</h5> --}}
                     </div>
                 </div>
                 <form action="{{Route('verificaLogin')}}" method="POST">

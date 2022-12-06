@@ -27,6 +27,7 @@
                     <div class="row py-2">
                         <div class="col-12">
                         <select class="form-select" name="contaDespesa" id="contaDespesa">
+                            <option value="">Selecione...</option>
                             @if (Auth::user()->contas)
                                 @foreach (Auth::user()->contas as $contaDespesa)
                                     <option value="{{$contaDespesa->id}}">{{$contaDespesa->descricao_conta}}</option>

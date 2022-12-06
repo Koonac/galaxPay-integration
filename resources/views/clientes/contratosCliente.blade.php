@@ -41,7 +41,27 @@
                             <td>{{$contrato->duracao_contrato}}</td>
                             <td>{{date('d/m/Y', strtotime($contrato->primeira_data_pagamento))}}</td>
                             <td>{{$contrato->status}}</td>
-                            <td></td>
+                            <td>
+                                <button class="btn btn-danger fw-bold" data-bs-toggle='modal' data-bs-target='#modalConfirmacaoExclusaoContrato{{$contrato->id}}'>Cancelar</button>
+                            </td>
+                            {{-- MODAL CONFIRMA EXCLUSÃO --}}
+                            <div class="modal fade" id="modalConfirmacaoExclusaoContrato{{$contrato->id}}" tabindex="-1" aria-labelledby="formModalTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-uppercase" id="formModalTitle">Confirmação</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Deseja confirma o cancelamento do contrato Nº <strong>{{$contrato->codigo_contrato_galaxpay}}</strong> ?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                            <a class="btn btn-success" href="{{route('galaxPay.cancelarContrato', $contrato)}}">Confirmar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </tr>
                     @endforeach
                 </tbody>

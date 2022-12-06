@@ -50,6 +50,7 @@
         @if (isset($caixaFinanceiro))
             <div class="row bg-light shadow border rounded mt-4 p-4">
                 <div class="col-md-12">
+                    <button type="button" id='btnAdicionaRecebimento' class="btn btn-success text-white fw-bold" data-bs-toggle="modal" data-bs-target="#modalRecebimento">+ Receber</button>
                     <button type="button" id='btnAdicionaDespesa' class="btn btn-danger text-white fw-bold" data-bs-toggle="modal" data-bs-target="#modalDespesa">- Pagar</button>
                 <table id="caixaFinanceiroTable" class="table table-hover">
                     <thead class="fw-bold">
@@ -94,6 +95,7 @@
                 </div>
             </div>
             @include('components.modals.geraDespesa')
+            @include('components.modals.geraRecebimento')
         @endif   
     </div>
     

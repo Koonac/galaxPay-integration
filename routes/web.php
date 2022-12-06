@@ -110,6 +110,7 @@ Route::middleware(['auth'])->namespace('App\Http\Controllers\api')->prefix('gala
     Route::get('/editar/{clienteGalaxPay}', 'galaxPayControllerAPI@editarClienteGalaxPay')->middleware(['acessoFuncionario'])->name('galaxPay.clientes');
     // CONTRATOS E TRANSAÇÕES
     Route::get('/criarContrato/{contrato}', 'galaxPayControllerAPI@criarContratoGalaxPay')->middleware(['acessoFuncionario'])->name('galaxPay.criarContrato');
+    Route::get('/cancelar/contrato/{contrato}', 'galaxPayControllerAPI@cancelaContratoPorContrato')->middleware(['acessoFuncionario'])->name('galaxPay.cancelarContrato');
     Route::get('/importaContratoCliente/{clienteGalaxpay}', 'galaxPayControllerAPI@importaContratoPorCliente')->middleware(['acessoFuncionario'])->name('galaxPay.importaContratoCliente');
     Route::get('/importaTransacoes/{clienteGalaxpay}/cliente', 'galaxPayControllerAPI@importaTransacoesPorCliente')->middleware(['acessoFuncionario'])->name('galaxPay.importaTransacoesPorCliente');
     Route::get('/importaTransacoes/{contrato}/contrato', 'galaxPayControllerAPI@importaTransacoesPorContrato')->middleware(['acessoFuncionario'])->name('galaxPay.importaTransacoesPorContrato');

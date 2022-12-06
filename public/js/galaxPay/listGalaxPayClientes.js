@@ -1,3 +1,7 @@
+var contCheckbox = 0;
+var codigoClientesGalaxpay = [];
+var codigoDependentesClienteGalaxpay = [];
+
 $(function () {
     let verificaMaskCpfCnpj = function (val) {
         return val.replace(/\D/g, '').length === 11 ? '000.000.000-00' : '00.000.000/0000-00';
@@ -34,9 +38,6 @@ $(function () {
 
     })
 });
-var contCheckbox = 0;
-var codigoClientesGalaxpay = [];
-var codigoDependentesClienteGalaxpay = [];
 
 function campoExtraImprimir(campo) {
     // INICIALIZANDO VARIAVEL DO CANVAS
@@ -59,7 +60,7 @@ function campoExtraImprimir(campo) {
                 contCheckbox--
             }
         }
-    } else if (campo.name == 'checkboxClienteDependente') {
+    } else {
         if (campo.checked) {
             // ADICIONANDO ID AO ARRAY
             codigoDependentesClienteGalaxpay.push(campo.value);

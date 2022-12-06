@@ -26,7 +26,7 @@
                                         <p class=""> {{$conta->descricao_conta}}</p>
                                     </td>
                                     <td class='border' align="right">
-                                        {{str_replace(' ', ',', str_replace(',', '.', str_replace('.', ' ', $conta->valor_conta)))}}
+                                       R$ {{str_replace(' ', ',', str_replace(',', '.', str_replace('.', ' ', $conta->valor_conta)))}}
                                     </td>
                                     <td align="center">
                                         <a href="{{route('financeiro.visualizarConta', $conta)}}" class="btn btn-warning text-white"><i class="fa-solid fa-eye"></i></a>

@@ -42,7 +42,7 @@
                             <span class="cnpjMask">{{$clienteGalaxpay->cpf_cnpj_cliente}}</span>
                         </div>
                         <div class="col-1">
-                            <input class="btn-check" type="checkbox" onchange='campoExtraImprimir(this)' value="{{$clienteGalaxpay->codigo_cliente_galaxpay}}" name="checkboxCliente" id="checkboxCliente" autocomplete="off">
+                            <input class="btn-check" type="checkbox" onchange='campoExtraImprimir(this)' value="{{$clienteGalaxpay->codigo_cliente_galaxpay}}" name="checkboxCliente" id="checkboxCliente">
                             <label class="btn btn-outline-success" for="checkboxCliente"><i class="fa-solid fa-check fa-lg"></i></label>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                             @foreach ($clienteGalaxpay->clientesDependentesGalaxpay as $clientesDependentesGalaxpay)
                                 <div class="row">
                                     <div class="col-md-5 ps-4" id="divDependente{{$clientesDependentesGalaxpay->id}}">
-                                        <label class="form-check-label px-2" for="checkboxClienteDependente"> {{$clientesDependentesGalaxpay->nome_cliente_dependente}} </label>
+                                        <label class="form-check-label px-2" for=""> {{$clientesDependentesGalaxpay->nome_cliente_dependente}} </label>
                                     </div>
                                     <div class="col-md-2 d-none d-md-block">
                                         {{-- <label class="form-check-label px-2" for=""> CPF </label> --}}
@@ -73,8 +73,8 @@
                                         <label for="" id="">{{$clientesDependentesGalaxpay->nascimento_cliente_dependente}}</label>
                                     </div>
                                     <div class="col-1">
-                                        <input class="btn-check" type="checkbox" onchange='campoExtraImprimir(this)' value="{{$clientesDependentesGalaxpay->id}}" name="checkboxClienteDependente" id="checkboxClienteDependente" autocomplete="off">
-                                        <label class="btn btn-outline-success" for="checkboxClienteDependente"><i class="fa-solid fa-check fa-lg"></i></label>
+                                        <input class="btn-check" type="checkbox" onchange='campoExtraImprimir(this)' value="{{$clientesDependentesGalaxpay->id}}" name="checkboxClienteDependente{{$clientesDependentesGalaxpay->id}}" id="checkboxClienteDependente{{$clientesDependentesGalaxpay->id}}">
+                                        <label class="btn btn-outline-success" for="checkboxClienteDependente{{$clientesDependentesGalaxpay->id}}"><i class="fa-solid fa-check fa-lg"></i></label>
                                     </div>
                                 </div>
                                 <hr>

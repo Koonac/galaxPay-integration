@@ -18,26 +18,6 @@ $(function () {
     $('.telefoneMask2').mask('(00) 00000-0000');
     $('.cepMask').mask('00000-000');
     $('.inteiro').mask('000000000000000000000000');
-    $('.datePicker').datepicker({
-        format: "dd/mm/yyyy",
-        language: "pt-BR",
-        autoclose: true,
-        todayHighlight: true,
-        beforeShowDay: function (date) {
-            if (date.getMonth() == (new Date()).getMonth())
-                switch (date.getDate()) {
-                    case 4:
-                        return {
-                            tooltip: 'Example tooltip',
-                            classes: 'active'
-                        };
-                    case 8:
-                        return false;
-                    case 12:
-                        return "green";
-                }
-        }
-    });
 
     // CAPTURANDO PATHNAME DA ROTA ATUAL
     let nomeRota = $(location).attr('pathname').replace('/', '').split('/');

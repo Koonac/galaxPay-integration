@@ -32,6 +32,11 @@
               <li class="nav-item flex-md-fill ">
                 <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="home" id="home" href="{{route('home')}}">Home</a>
               </li>
+              @can('acessoGalaxpay')
+                <li class="nav-item flex-md-fill">
+                  <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="galaxPay" id="galaxPay" href="{{route('galaxPay')}}">GalaxPay</a>
+                </li>
+              @endcan
               @can('acessoClientes')
                 <li class="nav-item flex-md-fill">
                   <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="clientes" id="clientes" href="{{route('clientes')}}">Clientes</a>
@@ -42,6 +47,11 @@
                 <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="empresasParceiras" id="empresasParceiras" href="{{route('empresasParceiras')}}">Empresas</a>
               </li>
               @endcan
+              @can('acessoFuncionarios')
+              <li class="nav-item flex-md-fill">
+                <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="funcionarios" id="funcionarios" href="{{route('funcionarios')}}">Funcionários</a>
+              </li>
+              @endcan
               @can('acessoFinanceiro')
               <li class="nav-item flex-md-fill">
                 <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="financeiro" id="financeiro" href="{{route('financeiro')}}">Financeiro</a>
@@ -50,16 +60,6 @@
               @can('acessoCaixa')
               <li class="nav-item flex-md-fill">
                 <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="caixa" id="caixa" href="{{route('caixa')}}">Caixa</a>
-              </li>
-              @endcan
-              @can('acessoGalaxpay')
-              <li class="nav-item flex-md-fill">
-                <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="galaxPay" id="galaxPay" href="{{route('galaxPay')}}">GalaxPay</a>
-              </li>
-              @endcan
-              @can('acessoFuncionarios')
-              <li class="nav-item flex-md-fill">
-                <a class="btn btn-outline-dark fw-bold text-white border border-info w-100" name="funcionarios" id="funcionarios" href="{{route('funcionarios')}}">Funcionários</a>
               </li>
               @endcan
               @can('isPartner')
